@@ -16,7 +16,7 @@ public class Main {
 
                 String clientMessage;
                 while ((clientMessage = reader.readLine()) != null) {
-                    System.out.println("Client request: " + clientMessage);
+                    System.out.println("Request: " + clientMessage);
                 }
             }
         } catch (IOException e) {
