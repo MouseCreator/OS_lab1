@@ -20,8 +20,8 @@ public class FFunction implements Function<Integer, Integer> {
         if (a == 0) {
             throw new IllegalArgumentException("Cannot calculate discrete log for zero");
         }
-        int count = 1;
-        while (a > 2) {
+        int count = 0;
+        while (a >= 2) {
             a = a >>> 1;
             count++;
         }
