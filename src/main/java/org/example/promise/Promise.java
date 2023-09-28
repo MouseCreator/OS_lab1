@@ -1,6 +1,6 @@
 package org.example.promise;
 
 public interface Promise<V> {
-    V get();
+    V get() throws InterruptedException;
     void set(V value);
 }
