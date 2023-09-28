@@ -6,7 +6,6 @@ import org.example.promise.PromiseImpl;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
 public class Server {
@@ -46,14 +45,6 @@ public class Server {
             while (!interrupted()) {
                 provideXValue();
             }
-        }
-    }
-
-    private class ConsumerTask implements Callable<Promise<Integer>> {
-
-        @Override
-        public Promise<Integer> call() throws Exception {
-            return null;
         }
     }
 
