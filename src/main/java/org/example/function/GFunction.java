@@ -18,9 +18,9 @@ public class GFunction implements Function<Integer, Integer>{
             throw new IllegalArgumentException("Cannot calculate square root of negative number: "+ a);
         }
         int sqRoot = 0;
-        while (sqRoot * sqRoot < a) {
+        while (sqRoot * sqRoot <= a) {
             sqRoot++;
         }
-        return sqRoot;
+        return sqRoot - 1;
     }
 }
