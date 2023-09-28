@@ -6,6 +6,11 @@ import java.net.Socket;
 
 public class Main {
     public static void main(String[] args) {
+        //start F and G
+        //Ask for X value (read)
+        //F and G process and write the result
+        //Memoization
+        //Promise`
 
         runSimpleProcess();
         try {
