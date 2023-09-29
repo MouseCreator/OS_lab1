@@ -4,7 +4,6 @@ import org.example.memoization.MemoizationMap;
 
 public class Manager {
     private final ConsoleManager consoleManager = new ConsoleManager();
-
     private final ExecutionManager executor = new ExecutionManagerImpl(new MemoizationMap<>(), new FunctionExecutor());
 
     public void start() {
@@ -42,7 +41,7 @@ public class Manager {
         try {
             consoleManager.lock();
             while (true) {
-                consoleManager.print("You are in menu mode. Leave menu mode?");
+                consoleManager.print("You are in the menu mode. Do you want to leave the menu mode?");
                 String command = consoleManager.askForString("Answer: ");
                 if (command.equals("yes") || command.equals("y"))
                     break;

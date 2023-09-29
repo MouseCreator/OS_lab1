@@ -10,7 +10,6 @@ public class ExecutionManagerImpl implements ExecutionManager {
 
     private final FunctionExecutor functionExecutor;
 
-
     public ExecutionManagerImpl(MemoizationMap<Integer> memoizationMap, FunctionExecutor functionExecutor) {
         this.memoizationMap = memoizationMap;
         this.functionExecutor = functionExecutor;
