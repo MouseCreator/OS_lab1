@@ -44,11 +44,6 @@ public class CommonCalculatorImpl implements CommonCalculator{
             sendToServer("5", name + ": execution timeout. Total light errors: " + task.lightErrorCount);
         }
 
-
-    }
-    private static final Object object = new Object();
-    public synchronized void setResult(int fx) {
-        object.notify();
     }
 
     private static class CalculationRunnable implements Callable<Optional<Optional<Integer>>> {
@@ -59,10 +54,6 @@ public class CommonCalculatorImpl implements CommonCalculator{
         public CalculationRunnable(Function<Integer, Integer> function, int x) {
             this.function = function;
             this.x = x;
-        }
-
-        public int getLightErrorCount() {
-            return lightErrorCount;
         }
 
         @Override
@@ -79,12 +70,6 @@ public class CommonCalculatorImpl implements CommonCalculator{
             }
             return Optional.empty();
         }
-    }
-
-    private boolean notTimedOut(long beginTime, long timeout) {
-        long currentTime = System.currentTimeMillis();
-        long elapsedTime = currentTime - beginTime;
-        return elapsedTime < timeout;
     }
 
     private void sendToServer(String status, String message) {
