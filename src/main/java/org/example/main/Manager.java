@@ -1,11 +1,11 @@
 package org.example.main;
 
-import java.io.IOException;
+import org.example.memoization.MemoizationMap;
 
 public class Manager {
     private final ConsoleManager consoleManager = new ConsoleManager();
 
-    private final FunctionExecutor functionExecutor = new FunctionExecutor();
+    private final ExecutionManager executor = new ExecutionManagerImpl(new MemoizationMap<>(), new FunctionExecutor());
 
     public void start() {
         doMainLoop();
@@ -29,9 +29,9 @@ public class Manager {
         int x = Integer.parseInt(v);
         Thread thread = new Thread(()->{
             try {
-                int result = functionExecutor.execute(x);
+                int result = executor.execute(x, 1000L);
                 consoleManager.print("Result:" + result);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 consoleManager.printError(e.getMessage());
             }
         });

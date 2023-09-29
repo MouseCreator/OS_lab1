@@ -95,4 +95,12 @@ public class CommonCalculatorImpl implements CommonCalculator{
             throw new RuntimeException(e);
         }
     }
+
+    private ValueTimeoutRecord receiveValue2() {
+        return new ValueTimeoutRecord(64, 1000L);
+    }
+    private void sendToServer2(String status, String message) {
+        System.out.println(status);
+        System.out.println(message);
+    }
 }

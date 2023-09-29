@@ -15,13 +15,13 @@ public class FunctionExecutor {
         serverSocket = new ServerSocket(7777);
     }
 
-    public int run(int x) {
+    public int run(int x, long timeout) {
         startFProcess();
         startGProcess();
         Promise<Integer> fResult = new PromiseImpl<>();
-        fResult.execute(()->provideXValue(x));
+        fResult.execute(()->provideXValue(x, timeout));
         Promise<Integer> gResult = new PromiseImpl<>();
-        gResult.execute(()->provideXValue(x));
+        gResult.execute(()->provideXValue(x, timeout));
 
         fResult.execute(this::receiveResultValue);
         gResult.execute(this::receiveResultValue);
@@ -42,12 +42,13 @@ public class FunctionExecutor {
     }
 
 
-    private Integer provideXValue(int x) {
+    private Integer provideXValue(int x, long timeout) {
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
             PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
             writer.print(x);
+            writer.print(timeout);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
@@ -79,9 +80,9 @@ public class FunctionExecutor {
         }
     }
 
-    public int execute(int x) throws IOException {
+    public int execute(int x, long t) throws IOException {
         start();
-        int result = run(x);
+        int result = run(x, t);
         close();
         return result;
     }
@@ -95,7 +96,7 @@ public class FunctionExecutor {
         }
     }
     private void startGProcess() {
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
+        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar2/OS_lab1.jar");
         try {
             processBuilder.start();
         } catch (IOException e) {
