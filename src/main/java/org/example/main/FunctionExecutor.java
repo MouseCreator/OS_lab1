@@ -7,8 +7,6 @@ import org.example.util.MathUtil;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class FunctionExecutor {
@@ -18,18 +16,19 @@ public class FunctionExecutor {
     }
 
     public int run(int x) {
-        CompletableFuture<Process> fProcess = startFProcess();
-        CompletableFuture<Process> gProcess = startGProcess();
+        startFProcess();
+        startGProcess();
 
         return awaitAndCalculate();
     }
 
     private int awaitAndCalculate() {
-        PromiseTask promiseFTask = new PromiseTask(() -> null);
-        Promise<Integer> fResult = promiseFTask.awaitResult();
+        Promise<Integer> fResult = new PromiseImpl<>();
 
-        PromiseTask promiseGTask = new PromiseTask(() -> null);
-        Promise<Integer> gResult = promiseGTask.awaitResult();
+        Promise<Integer> gResult = new PromiseImpl<>();
+
+        fResult.execute(this::receiveResultValue);
+        gResult.execute(this::receiveResultValue);
 
         MathUtil mathUtil = new MathUtil();
 
@@ -60,26 +59,20 @@ public class FunctionExecutor {
         }
     }
 
-    private Optional<Integer> receiveResultValue() throws Exception {
+    private Integer receiveResultValue() throws Exception {
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String status = reader.readLine();
             if (status.equals("0")) {
-                int result = Integer.parseInt(reader.readLine());
-                return Optional.of(result);
+                return Integer.parseInt(reader.readLine());
             } else {
                 throw new Exception(reader.readLine());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void readResult() {
-        CompletableFuture<Integer> completableFuture;
-        Promise<Integer> result = new PromiseImpl<>();
     }
 
     public int execute(int x) throws IOException {
@@ -98,24 +91,20 @@ public class FunctionExecutor {
         }
     }
 
-    private CompletableFuture<Process> startFProcess() {
+    private void  startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
-        Process process;
         try {
-            process = processBuilder.start();
+            processBuilder.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return process.onExit();
     }
-    private CompletableFuture<Process> startGProcess() {
+    private void startGProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
-        Process process;
         try {
-            process = processBuilder.start();
+            processBuilder.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return process.onExit();
     }
 }
