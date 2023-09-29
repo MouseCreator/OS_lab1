@@ -32,7 +32,6 @@ public class Manager {
                 int result = executor.execute(x, 1000L);
                 consoleManager.print("Result: " + result);
             } catch (Exception e) {
-                System.out.println(e.getMessage());
                 consoleManager.printError(e.getMessage());
             }
         });
