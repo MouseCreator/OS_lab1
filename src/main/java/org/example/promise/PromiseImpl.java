@@ -53,12 +53,34 @@ public class PromiseImpl<V> implements Promise<V> {
             try {
                 V val = callable.call();
                 set(val);
-                state = State.COMPLETED;
+                complete();
             } catch (Exception e) {
                 exception = new ExecutionException(e);
-                state = State.FAILED;
+                fail();
             }
         });
         thread.start();
+    }
+
+    private void complete() {
+        state = State.COMPLETED;
+        if (onComplete != null)
+            onComplete.run();
+    }
+    private void fail() {
+        state = State.FAILED;
+        if (onFail != null) {
+            onFail.run();
+        }
+    }
+    private Runnable onComplete = null;
+    private Runnable onFail = null;
+    public Promise<V> onComplete(Runnable r) {
+        onComplete = r;
+        return this;
+    }
+    public Promise<V> onFail(Runnable r) {
+        onFail = r;
+        return this;
     }
 }
