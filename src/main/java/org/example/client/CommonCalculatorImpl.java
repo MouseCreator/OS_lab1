@@ -15,6 +15,7 @@ public class CommonCalculatorImpl implements CommonCalculator{
         ValueTimeoutRecord valueTimeoutRecord = receiveValue();
         int x = valueTimeoutRecord.x();
         long timeout = valueTimeoutRecord.timeoutMillis;
+
         int lightErrorCount = 0;
         long begin = System.currentTimeMillis();
         do {
@@ -37,7 +38,8 @@ public class CommonCalculatorImpl implements CommonCalculator{
 
     private boolean notTimedOut(long beginTime, long timeout) {
         long currentTime = System.currentTimeMillis();
-        return currentTime - beginTime < timeout;
+        long elapsedTime = currentTime - beginTime;
+        return elapsedTime < timeout;
     }
 
     private void sendToServer(String status, String message) {
