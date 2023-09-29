@@ -90,8 +90,19 @@ public class FunctionExecutor {
     private void startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
         try {
-            processBuilder.start();
-        } catch (IOException e) {
+            Process process = processBuilder.start();
+            InputStream inputStream = process.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+
+            // Read the output of the process
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            int exitCode = process.waitFor();
+            System.out.println(exitCode);
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

@@ -5,6 +5,7 @@ import org.example.function.GFunction;
 public class ProcessG {
     public static void main(String[] args) {
         CommonCalculator commonCalculator = new CommonCalculatorImpl();
-        commonCalculator.calculate(new GFunction(), "Process G");
+        ClientIO socketClientIo = new SocketClientIo();
+        commonCalculator.calculate(socketClientIo, new GFunction(), "Process G");
     }
 }

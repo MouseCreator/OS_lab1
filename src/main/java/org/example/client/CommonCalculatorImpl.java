@@ -4,18 +4,17 @@ import org.example.function.Function;
 import org.example.promise.Promise;
 import org.example.promise.PromiseImpl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.Optional;
 import java.util.concurrent.*;
 
 public class CommonCalculatorImpl implements CommonCalculator{
-    private record ValueTimeoutRecord(int x, long timeoutMillis) {}
-    public void calculate(Function<Integer, Integer> function, String name) {
-        ValueTimeoutRecord valueTimeoutRecord = receiveValue();
+
+
+
+    public void calculate(ClientIO clientIO, Function<Integer, Integer> function, String name) {
+
+
+        ValueTimeoutRecord valueTimeoutRecord = clientIO.receiveValue();
         int x = valueTimeoutRecord.x();
 
         Promise<Optional<Optional<Integer>>> promise = new PromiseImpl<>();
@@ -27,22 +26,23 @@ public class CommonCalculatorImpl implements CommonCalculator{
         try {
             Optional<Optional<Integer>> result = promise.get(timeout);
             if (result.isEmpty()) {
-                sendToServer("1", name + ": calculation finished with error");
+                clientIO.sendToServer("1", name + ": calculation finished with error");
                 return;
             }
             if (result.get().isEmpty()) {
-                sendToServer("2", name + ": calculation finished with light error");
+                clientIO.sendToServer("2", name + ": calculation finished with light error");
                 return;
             }
             int fx = result.get().get();
-            sendToServer("0", String.valueOf(fx));
+            clientIO.sendToServer("0", String.valueOf(fx));
         } catch (InterruptedException e) {
-            sendToServer("3", name + ": calculation was interrupted");
+            clientIO.sendToServer("3", name + ": calculation was interrupted");
         } catch (ExecutionException e) {
-            sendToServer("4", name + ": finished with execution error " + e.getCause().getMessage());
+            clientIO.sendToServer("4", name + ": finished with execution error " + e.getCause().getMessage());
         } catch (TimeoutException e) {
-            sendToServer("5", name + ": execution timeout. Total light errors: " + task.lightErrorCount);
+            clientIO.sendToServer("5", name + ": execution timeout. Total light errors: " + task.lightErrorCount);
         }
+
 
     }
 
@@ -70,37 +70,5 @@ public class CommonCalculatorImpl implements CommonCalculator{
             }
             return Optional.empty();
         }
-    }
-
-    private void sendToServer(String status, String message) {
-        try (Socket clientSocket = new Socket("127.0.0.1", 7777)) {
-            PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-            writer.println(status);
-            writer.println(message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ValueTimeoutRecord receiveValue() {
-        try (Socket clientSocket = new Socket("127.0.0.1", 7777)) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String serverMessage;
-            serverMessage = reader.readLine();
-            int x = Integer.parseInt(serverMessage);
-            serverMessage = reader.readLine();
-            long timeoutMillis = Long.parseLong(serverMessage);
-            return new ValueTimeoutRecord(x, timeoutMillis);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ValueTimeoutRecord receiveValue2() {
-        return new ValueTimeoutRecord(64, 1000L);
-    }
-    private void sendToServer2(String status, String message) {
-        System.out.println(status);
-        System.out.println(message);
     }
 }
