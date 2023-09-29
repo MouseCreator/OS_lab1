@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Optional;
 
-public class CommonCalculatorImpl {
+public class CommonCalculatorImpl implements CommonCalculator{
     private record ValueTimeoutRecord(int x, long timeoutMillis) {}
     public void calculate(Function<Integer, Integer> function, String name) {
         ValueTimeoutRecord valueTimeoutRecord = receiveValue();

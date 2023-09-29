@@ -1,12 +1,10 @@
 package org.example.client;
 
-import org.example.function.FFunction;
+import org.example.function.GFunction;
 
-public class ProcessF {
+public class ProcessG {
     public static void main(String[] args) {
         CommonCalculator commonCalculator = new CommonCalculatorImpl();
-        commonCalculator.calculate(new FFunction(), "Process F");
+        commonCalculator.calculate(new GFunction(), "Process G");
     }
-
-
 }
