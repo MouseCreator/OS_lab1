@@ -18,15 +18,10 @@ public class FunctionExecutor {
     public int run(int x) {
         startFProcess();
         startGProcess();
-
-        return awaitAndCalculate();
-    }
-
-    private int awaitAndCalculate() {
         Promise<Integer> fResult = new PromiseImpl<>();
-
+        fResult.execute(()->provideXValue(x));
         Promise<Integer> gResult = new PromiseImpl<>();
-
+        gResult.execute(()->provideXValue(x));
         fResult.execute(this::receiveResultValue);
         gResult.execute(this::receiveResultValue);
 
@@ -46,14 +41,22 @@ public class FunctionExecutor {
     }
 
 
-    private void provideXValue() {
-        int x = 10;
+    private Integer provideXValue(int x) {
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
             PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
             writer.print(x);
-            writer.close();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            String status = reader.readLine();
+            String details = reader.readLine();
+            if (status.equals("0")) {
+                return Integer.parseInt(details);
+            } else {
+                throw new RuntimeException(details);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -82,16 +85,7 @@ public class FunctionExecutor {
         return result;
     }
 
-    private class ProviderThread extends Thread {
-        @Override
-        public void run() {
-            while (!interrupted()) {
-                provideXValue();
-            }
-        }
-    }
-
-    private void  startFProcess() {
+    private void startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
         try {
             processBuilder.start();
