@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.main.ConsoleManager;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,7 +13,11 @@ public class Main {
         //F and G process and write the result
         //Memoization
         //Promise`
+        runServer();
 
+
+    }
+    private static void runServer() {
         runSimpleProcess();
         try {
             try (ServerSocket serverSocket = new ServerSocket(7777)) {
@@ -28,7 +34,6 @@ public class Main {
             throw new RuntimeException(e);
         }
     }
-
     private static void runSimpleProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
         Process process;

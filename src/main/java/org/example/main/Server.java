@@ -8,13 +8,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
 public class Server {
-
     private ServerSocket serverSocket;
-
     public void start() throws IOException {
         serverSocket = new ServerSocket(7777);
     }
