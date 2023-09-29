@@ -25,10 +25,13 @@ public class PromiseImpl<V> implements Promise<V> {
             synchronizer.notifyAll();
         }
     }
-    public V get() throws InterruptedException {
+    public V get() throws InterruptedException, ExecutionException {
         synchronized (synchronizer) {
-            while (value == null) {
+            while (state == State.PROCESSING) {
                 synchronizer.wait();
+            }
+            if (state == State.FAILED) {
+                throw exception;
             }
             return value;
         }

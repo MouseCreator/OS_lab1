@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class FunctionExecutor {
     private ServerSocket serverSocket;
@@ -36,7 +37,7 @@ public class FunctionExecutor {
             int fx = fResult.get();
             int gx = gResult.get();
             return mathUtil.gcd(fx, gx);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
