@@ -38,6 +38,24 @@ public class ConsoleManager {
         }
     }
 
+    public String askForString(String prompt) {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        do {
+            System.out.print(prompt);
+            input = scanner.nextLine();
+
+        } while (input == null || input.isEmpty());
+
+        return input;
+    }
+
+    public void printError(String message) {
+        lock();
+        System.err.println(message);
+        unlock();
+    }
+
     public void lock() {
         lock.lock();
     }
@@ -45,4 +63,5 @@ public class ConsoleManager {
     public void unlock() {
         lock.unlock();
     }
+
 }

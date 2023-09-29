@@ -10,15 +10,15 @@ import java.net.Socket;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class Server {
+public class FunctionExecutor {
     private ServerSocket serverSocket;
     public void start() throws IOException {
         serverSocket = new ServerSocket(7777);
     }
 
-    public int run() {
-        CompletableFuture<Process> fResult = startFProcess();
-        CompletableFuture<Process> gResult = startGProcess();
+    public int run(int x) {
+        CompletableFuture<Process> fProcess = startFProcess();
+        CompletableFuture<Process> gProcess = startGProcess();
 
         return awaitAndCalculate();
     }
@@ -33,7 +33,9 @@ public class Server {
         MathUtil mathUtil = new MathUtil();
 
         try {
-            return mathUtil.gcd(fResult.get(), gResult.get());
+            int fx = fResult.get();
+            int gx = gResult.get();
+            return mathUtil.gcd(fx, gx);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -77,6 +79,13 @@ public class Server {
     private void readResult() {
         CompletableFuture<Integer> completableFuture;
         Promise<Integer> result = new PromiseImpl<>();
+    }
+
+    public int execute(int x) throws IOException {
+        start();
+        int result = run(x);
+        close();
+        return result;
     }
 
     private class ProviderThread extends Thread {
