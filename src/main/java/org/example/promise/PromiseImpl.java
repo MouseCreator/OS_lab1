@@ -3,25 +3,33 @@ package org.example.promise;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
 
 public class PromiseImpl<V> implements Promise<V> {
-    private V value;
     private State state = State.PROCESSING;
+
+    public V getNext() throws ExecutionException, InterruptedException {
+        next();
+        return get();
+    }
+
     enum State {
         PROCESSING, COMPLETED, FAILED
     }
 
     private ExecutionException exception;
 
+    private final LinkedBlockingQueue<V> resultQueue;
+
     private final Object synchronizer = new Object();
 
     public PromiseImpl() {
-        this.value = null;
+        resultQueue = new LinkedBlockingQueue<>();
     }
     public void set(V val) {
         synchronized (synchronizer) {
-            value = val;
+            resultQueue.add(val);
             synchronizer.notifyAll();
         }
     }
@@ -33,7 +41,7 @@ public class PromiseImpl<V> implements Promise<V> {
             if (state == State.FAILED) {
                 throw exception;
             }
-            return value;
+            return resultQueue.peek();
         }
     }
 
@@ -47,7 +55,7 @@ public class PromiseImpl<V> implements Promise<V> {
             if (state == State.FAILED) {
                 throw exception;
             }
-            return value;
+            return resultQueue.peek();
         }
     }
 
@@ -85,5 +93,12 @@ public class PromiseImpl<V> implements Promise<V> {
     public Promise<V> onFail(Runnable r) {
         onFail = r;
         return this;
+    }
+
+    public void next() {
+        synchronized (synchronizer) {
+            resultQueue.poll();
+            state = State.PROCESSING;
+        }
     }
 }

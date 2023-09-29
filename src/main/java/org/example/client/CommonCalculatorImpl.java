@@ -2,6 +2,7 @@ package org.example.client;
 
 import org.example.function.Function;
 import org.example.promise.Promise;
+import org.example.promise.PromiseImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,52 +10,48 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class CommonCalculatorImpl implements CommonCalculator{
     private record ValueTimeoutRecord(int x, long timeoutMillis) {}
     public void calculate(Function<Integer, Integer> function, String name) {
         ValueTimeoutRecord valueTimeoutRecord = receiveValue();
         int x = valueTimeoutRecord.x();
-        int N = 2;
-        ExecutorService service = Executors.newFixedThreadPool(N);
-        CalculationRunnable[] calculationRunnables = new CalculationRunnable[N];
-        for (int i = 0; i < N; i++) {
-            calculationRunnables[i] = new CalculationRunnable(function, x);
-            service.submit(calculationRunnables[i]);
-        }
-        Optional<Optional<Integer>> result = Optional.empty();
-        synchronized (object) {
-            Promise<Optional<Optional<Integer>>> promise;
 
+        Promise<Optional<Optional<Integer>>> promise = new PromiseImpl<>();
+        CalculationRunnable task = new CalculationRunnable(function, x);
+        promise.execute(task);
+
+        long timeout = valueTimeoutRecord.timeoutMillis();
+
+        try {
+            Optional<Optional<Integer>> result = promise.get(timeout);
             if (result.isEmpty()) {
-                sendToServer("1", name + "finished with fatal error!");
+                sendToServer("1", name + ": calculation finished with error");
                 return;
-            } else if (result.get().isEmpty()) {
-                sendToServer("2", name + "finished with light error!");
-            } else {
-                sendToServer("0", String.valueOf(result.get().get()));
             }
-
+            if (result.get().isEmpty()) {
+                sendToServer("2", name + ": calculation finished with light error");
+                return;
+            }
+            int fx = result.get().get();
+            sendToServer("0", String.valueOf(fx));
+        } catch (InterruptedException e) {
+            sendToServer("3", name + ": calculation was interrupted");
+        } catch (ExecutionException e) {
+            sendToServer("4", name + ": finished with execution error " + e.getCause().getMessage());
+        } catch (TimeoutException e) {
+            sendToServer("5", name + ": execution timeout. Total light errors: " + task.lightErrorCount);
         }
-        // if timeout
-        service.shutdown();
-        int totalLightErrorCount = 0;
-        for (CalculationRunnable calculationRunnable : calculationRunnables) {
-            int lightErrorCount = calculationRunnable.getLightErrorCount();
-            totalLightErrorCount += lightErrorCount;
-        }
 
-        sendToServer("3", name + " calculation timeout. Total light errors: " + totalLightErrorCount);
+
     }
     private static final Object object = new Object();
-    public synchronized void setResult(Optional<Optional<Integer>> fx) {
-
+    public synchronized void setResult(int fx) {
         object.notify();
     }
 
-    private static class CalculationRunnable implements Runnable {
+    private static class CalculationRunnable implements Callable<Optional<Optional<Integer>>> {
         private final Function<Integer, Integer> function;
         private final int x;
         private int lightErrorCount = 0;
@@ -69,20 +66,18 @@ public class CommonCalculatorImpl implements CommonCalculator{
         }
 
         @Override
-        public void run() {
+        public Optional<Optional<Integer>> call() {
             while (!Thread.interrupted()) {
                 Optional<Optional<Integer>> result = function.compute(x);
-                if (result.isEmpty()) { //fatal error
-
-                    return;
-                }
+                if (result.isEmpty()) //fatal error
+                    return result;
                 if (result.get().isEmpty()) { //light error
                     lightErrorCount++;
                     continue;
                 }
-                int fx = result.get().get();
-                return;
+                return result; //success
             }
+            return Optional.empty();
         }
     }
 

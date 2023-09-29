@@ -67,4 +67,19 @@ class PromiseImplTest {
         }
         assertEquals(4, v.getA());
     }
+
+    @Test
+    void nextTest() {
+        PromiseImpl<Integer> promise = new PromiseImpl<>();
+        promise.execute(() -> 2);
+        promise.execute(() -> 4);
+        try {
+            Integer a = promise.get();
+            assertTrue(a == 4 || a == 2);
+            Integer b = promise.getNext();
+            assertEquals(6, a + b);
+        } catch (InterruptedException | ExecutionException e) {
+            fail();
+        }
+    }
 }
