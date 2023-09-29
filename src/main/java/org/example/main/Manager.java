@@ -19,7 +19,7 @@ public class Manager {
                     return;
                 }
                 case "menu", "m" -> menuMode();
-                case "time", "t" -> t = changeTimeout();
+                case "time", "t" -> t = changeTimeout(t);
                 case "" -> {
                 }
                 default -> processInteger(command, t);
@@ -28,14 +28,23 @@ public class Manager {
         }
     }
 
-    private long changeTimeout() {
+    private long changeTimeout(long t) {
         String s = consoleManager.askForString("Timeout: ");
-        return Long.parseLong(s);
+        try {
+            return Long.parseLong(s);
+        } catch (Exception e) {
+            return t;
+        }
     }
 
     private void processInteger(String v, long timeout) {
-        int x = Integer.parseInt(v);
-
+        int x;
+        try {
+            x = Integer.parseInt(v);
+        } catch (Exception e) {
+            consoleManager.printError("Cannot cast " + v + " to integer!");
+            return;
+        }
         Thread thread = new Thread(()->{
             try {
                 int result = executor.execute(x, timeout);
