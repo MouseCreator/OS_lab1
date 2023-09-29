@@ -11,26 +11,40 @@ public class Manager {
     }
 
     private void doMainLoop() {
-        while (true) {
-            String command = consoleManager.askForString("X: ");
-            switch (command) {
-                case "exit", "e" -> {
-                    return;
+        executor.start();
+        long t = 1000L;
+        try {
+            while (true) {
+                String command = consoleManager.askForString("X: ");
+                switch (command) {
+                    case "exit", "e" -> {
+                        return;
+                    }
+                    case "menu", "m" -> menuMode();
+                    case "time", "t" -> t = changeTimeout();
+                    case "" -> {
+                    }
+                    default -> processInteger(command, t);
                 }
-                case "menu", "m" -> menuMode();
-                case "" -> {}
-                default -> processInteger(command);
-            }
 
+            }
+        } finally {
+            executor.close();
         }
     }
 
-    private void processInteger(String v) {
+    private long changeTimeout() {
+        String s = consoleManager.askForString("Timeout: ");
+        return Long.parseLong(s);
+    }
+
+    private void processInteger(String v, long timeout) {
         int x = Integer.parseInt(v);
+
         Thread thread = new Thread(()->{
             try {
-                int result = executor.execute(x, 1000L);
-                consoleManager.print("Result: " + result);
+                int result = executor.execute(x, timeout);
+                consoleManager.print("\nResult: " + result);
             } catch (Exception e) {
                 consoleManager.printError(e.getMessage());
             }
