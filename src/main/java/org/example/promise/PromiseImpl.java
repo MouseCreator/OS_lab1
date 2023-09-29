@@ -96,9 +96,10 @@ public class PromiseImpl<V> implements Promise<V> {
     }
 
     public void next() {
-        synchronized (synchronizer) {
-            resultQueue.poll();
-            state = State.PROCESSING;
-        }
+        throw new UnsupportedOperationException();
+        //synchronized (synchronizer) {
+            //resultQueue.poll();
+            //state = State.PROCESSING;
+        //}
     }
 }
