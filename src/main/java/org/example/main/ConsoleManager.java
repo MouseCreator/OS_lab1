@@ -15,44 +15,26 @@ public class ConsoleManager {
             unlock();
         }
     }
-    public int askForInt(String prompt) {
+
+    public String askForString(String prompt) {
         lock();
         try {
             Scanner scanner = new Scanner(System.in);
             String input;
-            int res;
             do {
                 System.out.print(prompt);
                 input = scanner.nextLine();
-                if ((input == null || input.isEmpty()))
-                    continue;
-                try {
-                    res = Integer.parseInt(input);
-                } catch (Exception e) {
-                    continue;
-                }
-                return res;
-            } while (true);
+            } while (input == null);
+
+            return input;
         } finally {
             unlock();
         }
     }
 
-    public String askForString(String prompt) {
-        Scanner scanner = new Scanner(System.in);
-        String input;
-        do {
-            System.out.print(prompt);
-            input = scanner.nextLine();
-
-        } while (input == null || input.isEmpty());
-
-        return input;
-    }
-
     public void printError(String message) {
         lock();
-        System.err.println(message);
+        System.out.println(message);
         unlock();
     }
 

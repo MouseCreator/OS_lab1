@@ -18,6 +18,7 @@ public class Manager {
                     return;
                 }
                 case "menu", "m" -> menuMode();
+                case "" -> {}
                 default -> processInteger(command);
             }
 
@@ -29,8 +30,9 @@ public class Manager {
         Thread thread = new Thread(()->{
             try {
                 int result = executor.execute(x, 1000L);
-                consoleManager.print("Result:" + result);
+                consoleManager.print("Result: " + result);
             } catch (Exception e) {
+                System.out.println(e.getMessage());
                 consoleManager.printError(e.getMessage());
             }
         });

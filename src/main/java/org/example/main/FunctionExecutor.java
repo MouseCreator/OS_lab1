@@ -24,7 +24,6 @@ public class FunctionExecutor {
         gResult.execute(()->provideXValue(x, timeout));
 
         MathUtil mathUtil = new MathUtil();
-
         try {
             int fx = fResult.get();
             int gx = gResult.get();
@@ -61,26 +60,29 @@ public class FunctionExecutor {
         }
     }
 
-    private Integer receiveResultValue() throws Exception {
-        Socket clientSocket;
-        try {
-            clientSocket = serverSocket.accept();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String status = reader.readLine();
-            if (status.equals("0")) {
-                return Integer.parseInt(reader.readLine());
-            } else {
-                throw new Exception(reader.readLine());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private void startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
         try {
-            processBuilder.start();
+            Process process = processBuilder.start();
+            Thread thread = new Thread(
+                    ()->{
+                        try {
+                            InputStream inputStream = process.getInputStream();
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                            String line;
+
+                            while ((line = reader.readLine()) != null) {
+                                System.out.println(line);
+                            }
+
+                            int exitCode = process.waitFor();
+                            System.out.println("External process exited with code: " + exitCode);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+            thread.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -88,7 +90,25 @@ public class FunctionExecutor {
     private void startGProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar2/OS_lab1.jar");
         try {
-            processBuilder.start();
+            Process process = processBuilder.start();
+            Thread thread = new Thread(
+                    ()->{
+                        try {
+                            InputStream inputStream = process.getInputStream();
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                            String line;
+
+                            while ((line = reader.readLine()) != null) {
+                                System.out.println(line);
+                            }
+
+                            int exitCode = process.waitFor();
+                            System.out.println("External process exited with code: " + exitCode);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+            thread.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

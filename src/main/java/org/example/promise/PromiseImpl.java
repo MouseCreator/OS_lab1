@@ -79,9 +79,12 @@ public class PromiseImpl<V> implements Promise<V> {
             onComplete.run();
     }
     private void fail() {
-        state = State.FAILED;
-        if (onFail != null) {
-            onFail.run();
+        synchronized (synchronizer) {
+            state = State.FAILED;
+            if (onFail != null) {
+                onFail.run();
+            }
+            synchronizer.notifyAll();
         }
     }
     private Runnable onComplete = null;
