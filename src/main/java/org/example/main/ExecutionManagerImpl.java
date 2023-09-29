@@ -17,12 +17,17 @@ public class ExecutionManagerImpl implements ExecutionManager {
     }
 
     public int execute(int x, long timeout) throws Exception {
-        Optional<Integer> memoizationOptional = memoizationMap.get(x);
-        if (memoizationOptional.isPresent())
-            return memoizationOptional.get();
-        int result = functionExecutor.run(x, timeout);
-        memoizationMap.put(x, result);
-        return result;
+        try {
+            Optional<Integer> memoizationOptional = memoizationMap.get(x);
+            if (memoizationOptional.isPresent())
+                return memoizationOptional.get();
+            functionExecutor.start();
+            int result = functionExecutor.run(x, timeout);
+            memoizationMap.put(x, result);
+            return result;
+        } finally {
+            functionExecutor.close();
+        }
     }
 
     @Override

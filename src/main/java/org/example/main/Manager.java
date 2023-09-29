@@ -11,25 +11,20 @@ public class Manager {
     }
 
     private void doMainLoop() {
-        executor.start();
         long t = 1000L;
-        try {
-            while (true) {
-                String command = consoleManager.askForString("X: ");
-                switch (command) {
-                    case "exit", "e" -> {
-                        return;
-                    }
-                    case "menu", "m" -> menuMode();
-                    case "time", "t" -> t = changeTimeout();
-                    case "" -> {
-                    }
-                    default -> processInteger(command, t);
+        while (true) {
+            String command = consoleManager.askForString("X: ");
+            switch (command) {
+                case "exit", "e" -> {
+                    return;
                 }
-
+                case "menu", "m" -> menuMode();
+                case "time", "t" -> t = changeTimeout();
+                case "" -> {
+                }
+                default -> processInteger(command, t);
             }
-        } finally {
-            executor.close();
+
         }
     }
 
