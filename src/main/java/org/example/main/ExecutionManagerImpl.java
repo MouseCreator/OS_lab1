@@ -17,23 +17,21 @@ public class ExecutionManagerImpl implements ExecutionManager {
     }
 
     public int execute(int x, long timeout) throws Exception {
-        try {
-            Optional<Integer> memoizationOptional = memoizationMap.get(x);
-            if (memoizationOptional.isPresent())
-                return memoizationOptional.get();
-            functionExecutor.start();
-            int result = functionExecutor.run(x, timeout);
-            memoizationMap.put(x, result);
-            return result;
-        } finally {
-            functionExecutor.close();
-        }
+        Optional<Integer> memoizationOptional = memoizationMap.get(x);
+        if (memoizationOptional.isPresent())
+            return memoizationOptional.get();
+        functionExecutor.start();
+        int result = functionExecutor.run(x, timeout);
+        functionExecutor.close();
+        memoizationMap.put(x, result);
+        return result;
+
     }
 
     @Override
     public void close() {
         try {
-            this.functionExecutor.close();
+            functionExecutor.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -42,7 +40,7 @@ public class ExecutionManagerImpl implements ExecutionManager {
     @Override
     public void start() {
         try {
-            this.functionExecutor.start();
+            functionExecutor.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
