@@ -9,7 +9,7 @@ public class PromiseTask {
 
     private final Callable<Integer> task;
 
-    private PromiseTask(Callable<Integer> task) {
+    public PromiseTask(Callable<Integer> task) {
         this.task = task;
     }
 
