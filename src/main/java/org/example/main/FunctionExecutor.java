@@ -23,9 +23,6 @@ public class FunctionExecutor {
         Promise<Integer> gResult = new PromiseImpl<>();
         gResult.execute(()->provideXValue(x, timeout));
 
-        fResult.execute(this::receiveResultValue);
-        gResult.execute(this::receiveResultValue);
-
         MathUtil mathUtil = new MathUtil();
 
         try {
@@ -47,8 +44,8 @@ public class FunctionExecutor {
         try {
             clientSocket = serverSocket.accept();
             PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-            writer.print(x);
-            writer.print(timeout);
+            writer.println(x);
+            writer.println(timeout);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
@@ -80,29 +77,11 @@ public class FunctionExecutor {
         }
     }
 
-    public int execute(int x, long t) throws IOException {
-        start();
-        int result = run(x, t);
-        close();
-        return result;
-    }
-
     private void startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
         try {
-            Process process = processBuilder.start();
-            InputStream inputStream = process.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-
-            // Read the output of the process
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            int exitCode = process.waitFor();
-            System.out.println(exitCode);
-        } catch (IOException | InterruptedException e) {
+            processBuilder.start();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

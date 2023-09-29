@@ -12,11 +12,10 @@ public class CommonCalculatorImpl implements CommonCalculator{
 
 
     public void calculate(ClientIO clientIO, Function<Integer, Integer> function, String name) {
-
-
+        System.out.println("CALC");
         ValueTimeoutRecord valueTimeoutRecord = clientIO.receiveValue();
         int x = valueTimeoutRecord.x();
-
+        System.out.println("X = " + x);
         Promise<Optional<Optional<Integer>>> promise = new PromiseImpl<>();
         CalculationRunnable task = new CalculationRunnable(function, x);
         promise.execute(task);
