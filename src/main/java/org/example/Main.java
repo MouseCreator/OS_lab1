@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.main.ConsoleManager;
+import org.example.main.Manager;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -13,8 +13,8 @@ public class Main {
         //F and G process and write the result
         //Memoization
         //Promise`
-        runServer();
-
+        Manager mng = new Manager();
+        mng.start();
 
     }
     private static void runServer() {

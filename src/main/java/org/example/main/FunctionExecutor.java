@@ -22,6 +22,7 @@ public class FunctionExecutor {
         fResult.execute(()->provideXValue(x));
         Promise<Integer> gResult = new PromiseImpl<>();
         gResult.execute(()->provideXValue(x));
+
         fResult.execute(this::receiveResultValue);
         gResult.execute(this::receiveResultValue);
 
