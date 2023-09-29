@@ -8,34 +8,22 @@ public class ConsoleManager {
     private static final ReentrantLock lock = new ReentrantLock();
 
     public void print(String message) {
-        lock();
-        try {
-            System.out.println(message);
-        } finally {
-            unlock();
-        }
+        System.out.println(message);
     }
 
     public String askForString(String prompt) {
-        lock();
-        try {
-            Scanner scanner = new Scanner(System.in);
-            String input;
-            do {
-                System.out.print(prompt);
-                input = scanner.nextLine();
-            } while (input == null);
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        do {
+            System.out.print(prompt);
+            input = scanner.nextLine();
+        } while (input == null);
 
-            return input;
-        } finally {
-            unlock();
-        }
+        return input;
     }
 
     public void printError(String message) {
-        lock();
-        System.out.println(message);
-        unlock();
+        System.err.println(message);
     }
 
     public void lock() {

@@ -64,25 +64,7 @@ public class FunctionExecutor {
     private void startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
         try {
-            Process process = processBuilder.start();
-            Thread thread = new Thread(
-                    ()->{
-                        try {
-                            InputStream inputStream = process.getInputStream();
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                            String line;
-
-                            while ((line = reader.readLine()) != null) {
-                                System.out.println(line);
-                            }
-
-                            int exitCode = process.waitFor();
-                            System.out.println("External process exited with code: " + exitCode);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-            thread.start();
+            processBuilder.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -90,25 +72,7 @@ public class FunctionExecutor {
     private void startGProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar2/OS_lab1.jar");
         try {
-            Process process = processBuilder.start();
-            Thread thread = new Thread(
-                    ()->{
-                        try {
-                            InputStream inputStream = process.getInputStream();
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                            String line;
-
-                            while ((line = reader.readLine()) != null) {
-                                System.out.println(line);
-                            }
-
-                            int exitCode = process.waitFor();
-                            System.out.println("External process exited with code: " + exitCode);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-            thread.start();
+            processBuilder.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

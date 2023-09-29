@@ -13,7 +13,6 @@ public class SocketClientIo implements ClientIO {
     public ValueTimeoutRecord receiveValue() {
         BufferedReader reader;
         try {
-            System.out.println("Connected? " + socket.isConnected());
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String serverMessage;
             serverMessage = reader.readLine();
