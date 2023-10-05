@@ -1,9 +1,9 @@
 package org.example.main.completable.socket;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import org.example.main.completable.dto.ProcessRequestDTO;
+import org.example.main.completable.dto.ProcessResponseDTO;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
@@ -52,41 +52,59 @@ public class SocketManagerImpl implements SocketManager {
             readWriteLock.writeLock().unlock();
         }
     }
-    public CompletableFuture<Integer> sendX() {
-        CompletableFuture<Integer> future = new CompletableFuture<>();
-        future.cancel(true);
-
+    public void doServerCycle() {
+        while (!Thread.interrupted()) {
+            handleClient();
+        }
+    }
+    public void handleClient() {
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
-            return runFuture(clientSocket);
+            Thread clintThread = new Thread(() -> runFuture(clientSocket));
+            clintThread.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private CompletableFuture<Integer> runFuture(Socket clientSocket) {
-        return CompletableFuture.supplyAsync(()->{
+    private void runFuture(Socket clientSocket) {
+        CompletableFuture.supplyAsync(()->{
             try {
-                PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-                readWriteLock.readLock().lock();
-                writer.println(x);
-                writer.println(timeoutMillis);
-                readWriteLock.readLock().unlock();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                String status = reader.readLine();
-                String details = reader.readLine();
-                if (status.equals("0")) {
-                    return Integer.parseInt(details);
+                ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+                Object method = inputStream.readObject();
+                if (method.equals("POST")) {
+                    return receiveData(inputStream);
+                } else if (method.equals("GET")) {
+                    provideData(outputStream);
                 } else {
-                    throw new RuntimeException(details);
+                    throw new RuntimeException("Unknown method from client: " + method);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
-            } finally {
-                readWriteLock.readLock().unlock();
             }
+            return 0;
         });
+    }
+
+    private int receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        ProcessResponseDTO receivedProcessDTO = (ProcessResponseDTO) inputStream.readObject();
+        if (receivedProcessDTO.processStatus() == 0) {
+            return receivedProcessDTO.value();
+        } else {
+            throw new RuntimeException(receivedProcessDTO.details());
+        }
+    }
+
+    private void provideData(ObjectOutputStream outputStream) throws IOException {
+        try {
+            readWriteLock.readLock().lock();
+            outputStream.writeObject(new ProcessRequestDTO(x, timeoutMillis));
+            outputStream.flush();
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
 
     @Override
