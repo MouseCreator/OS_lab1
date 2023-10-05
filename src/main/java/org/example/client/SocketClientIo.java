@@ -1,5 +1,7 @@
 package org.example.client;
 
+import org.example.client.socket.ValueTimeoutRecord;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

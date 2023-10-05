@@ -1,5 +1,7 @@
 package org.example.client;
 
+import org.example.client.socket.ValueTimeoutRecord;
+
 public class MockClientIo implements ClientIO{
     @Override
     public ValueTimeoutRecord receiveValue() {
