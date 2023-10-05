@@ -8,7 +8,7 @@ public class Main {
         //Ask for X value (read)
         //F and G process and write the result
         //Memoization
-        //Promise`
+        //Promise`= CompletableFuture
         Manager mng = new Manager();
         mng.start();
 
