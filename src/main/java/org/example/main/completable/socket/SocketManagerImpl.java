@@ -9,9 +9,7 @@ import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 
 public class SocketManagerImpl implements SocketManager {
-
     private ServerSocket serverSocket;
-
     @Override
     public void start() {
         try {
@@ -31,18 +29,18 @@ public class SocketManagerImpl implements SocketManager {
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
-            PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-            writer.println(x);
-            writer.println(timeout);
-            return runFuture(clientSocket);
+            return runFuture(clientSocket, x, timeout);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private CompletableFuture<Integer> runFuture(Socket clientSocket) {
+    private CompletableFuture<Integer> runFuture(Socket clientSocket, int x, long timeout) {
         return CompletableFuture.supplyAsync(()->{
             try {
+                PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
+                writer.println(x);
+                writer.println(timeout);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 String status = reader.readLine();
                 String details = reader.readLine();
