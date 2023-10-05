@@ -7,9 +7,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SocketManagerImpl implements SocketManager {
     private ServerSocket serverSocket;
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     @Override
     public void start() {
         try {
@@ -22,25 +25,54 @@ public class SocketManagerImpl implements SocketManager {
         }
     }
 
-    public CompletableFuture<Integer> sendX(int x, long timeout) {
+    private int x;
+    private long timeoutMillis;
+    public void set(int x, long timeout) {
+        try {
+            readWriteLock.writeLock().lock();
+            this.x = x;
+            this.timeoutMillis = timeout;
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    public void setX(int x) {
+        try {
+            readWriteLock.writeLock().lock();
+            this.x = x;
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    public void setTimeoutMillis(long t) {
+        try {
+            readWriteLock.writeLock().lock();
+            this.timeoutMillis = t;
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    public CompletableFuture<Integer> sendX() {
         CompletableFuture<Integer> future = new CompletableFuture<>();
         future.cancel(true);
 
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
-            return runFuture(clientSocket, x, timeout);
+            return runFuture(clientSocket);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private CompletableFuture<Integer> runFuture(Socket clientSocket, int x, long timeout) {
+    private CompletableFuture<Integer> runFuture(Socket clientSocket) {
         return CompletableFuture.supplyAsync(()->{
             try {
                 PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
+                readWriteLock.readLock().lock();
                 writer.println(x);
-                writer.println(timeout);
+                writer.println(timeoutMillis);
+                readWriteLock.readLock().unlock();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 String status = reader.readLine();
                 String details = reader.readLine();
@@ -51,6 +83,8 @@ public class SocketManagerImpl implements SocketManager {
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                readWriteLock.readLock().unlock();
             }
         });
     }
