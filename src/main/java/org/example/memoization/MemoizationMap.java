@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class MemoizationMap<V> {
-    private final HashMap<V, V> processMemoizationMap = new HashMap<>();
+    private final HashMap<V, String> processMemoizationMap = new HashMap<>();
 
-    public Optional<V> get(V input) {
+    public Optional<String> get(V input) {
         return Optional.ofNullable(processMemoizationMap.get(input));
     }
 
-    public Optional<V> put(V input, V output) {
-        V prev = processMemoizationMap.put(input, output);
+    public Optional<String> put(V input, String output) {
+        String prev = processMemoizationMap.put(input, output);
         return Optional.ofNullable(prev);
     }
 
