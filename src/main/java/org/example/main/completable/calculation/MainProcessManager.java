@@ -34,14 +34,14 @@ public class MainProcessManager implements AutoCloseable {
     }
 
     public void close() {
+        if (socketManager != null) {
+            socketManager.close();
+        }
         if (processF != null) {
             processF.destroy();
         }
         if (processG != null) {
             processG.destroy();
-        }
-        if (socketManager != null) {
-            socketManager.close();
         }
     }
 }

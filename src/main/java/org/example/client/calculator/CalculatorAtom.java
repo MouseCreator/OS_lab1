@@ -1,8 +1,6 @@
 package org.example.client.calculator;
 
-import org.example.client.socket.ClientSocketIO;
-import org.example.client.socket.ClientSocketManager;
-import org.example.client.socket.ValueTimeoutRecord;
+import org.example.client.socket.*;
 import org.example.function.Function;
 import org.example.main.completable.dto.Status;
 
@@ -11,8 +9,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class CommonCalculatorSocket implements CommonCalculator {
-    private final ClientSocketIO clientSocketIO = new ClientSocketManager();
+public class CalculatorAtom implements CommonCalculator{
+
+    private final AtomClientSocketIO clientSocketIO;
+
+    public CalculatorAtom(AtomClientSocketIO clientSocketIO) {
+        this.clientSocketIO = clientSocketIO;
+    }
 
     public void calculate(Function<Integer, Integer> function, String name) {
         ValueTimeoutRecord valueTimeoutRecord = clientSocketIO.receiveData(name);
@@ -22,7 +25,6 @@ public class CommonCalculatorSocket implements CommonCalculator {
         Executor executor = new Executor(x, limit, function);
         try {
             Optional<Optional<Integer>> result = executor.execute().get(timeout, TimeUnit.MILLISECONDS);
-            System.out.println("Got result");
             if (result.isEmpty()) {
                 clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                         "Calculation finished with error");
@@ -46,4 +48,5 @@ public class CommonCalculatorSocket implements CommonCalculator {
         }
 
     }
+
 }

@@ -64,7 +64,9 @@ public class SocketManagerImpl implements SocketManager {
             } else {
                 throw new RuntimeException("Unknown method from client: " + method);
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            return;
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

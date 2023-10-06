@@ -21,7 +21,6 @@ public class CompletableController {
             thread.start();
             doMainLoop();
             thread.interrupt();
-            thread.join();
             mainProcessManager.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
