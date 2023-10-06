@@ -16,6 +16,18 @@ public class SocketManagerAtom {
     private Socket FSocket;
     private Socket GSocket;
 
+    private ObjectOutputStream outputStreamF;
+    private ObjectInputStream inputStreamF;
+    private ObjectOutputStream outputStreamG;
+    private ObjectInputStream inputStreamG;
+
+    private void initStreams() throws IOException {
+        outputStreamF = new ObjectOutputStream(FSocket.getOutputStream());
+        inputStreamF = new ObjectInputStream(FSocket.getInputStream());
+        outputStreamG = new ObjectOutputStream(GSocket.getOutputStream());
+        inputStreamG = new ObjectInputStream(GSocket.getInputStream());
+    }
+
     public void start() {
         try {
             if (serverSocket != null) {
@@ -31,22 +43,21 @@ public class SocketManagerAtom {
         try {
             FSocket = serverSocket.accept();
             GSocket = serverSocket.accept();
+            initStreams();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
     public CompletableFuture<Integer> calculateF(CalculationParameters params) {
-        return CompletableFuture.supplyAsync(()->runFuture(FSocket, params));
+        return CompletableFuture.supplyAsync(()->runFuture(inputStreamF, outputStreamF, params));
     }
 
     public CompletableFuture<Integer> calculateG(CalculationParameters params) {
-        return CompletableFuture.supplyAsync(()->runFuture(GSocket, params));
+        return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params));
     }
 
-    private int runFuture(Socket clientSocket, CalculationParameters params) {
+    private int runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream, CalculationParameters params) {
         try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
             provideData(outputStream, params);
             return receiveData(inputStream);
         } catch (Exception e) {
