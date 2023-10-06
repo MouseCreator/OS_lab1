@@ -25,6 +25,7 @@ public class CalculatorAtom implements CommonCalculator{
         Executor executor = new Executor(x, limit, function);
         try {
             Optional<Optional<Integer>> result = executor.execute().get(timeout, TimeUnit.MILLISECONDS);
+            System.out.println("G done!");
             if (result.isEmpty()) {
                 clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                         "Calculation finished with error");
@@ -36,7 +37,8 @@ public class CalculatorAtom implements CommonCalculator{
                 return;
             }
             int fx = result.get().get();
-            clientSocketIO.sendData(name, x, Status.SUCCESS, fx, "Calculation finished with light error");
+            System.out.println("Case result");
+            clientSocketIO.sendData(name, x, Status.SUCCESS, fx, "Calculation success!");
         } catch (ExecutionException e) {
             clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                     "Calculation finished with execution error");

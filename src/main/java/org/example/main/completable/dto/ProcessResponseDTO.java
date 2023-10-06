@@ -5,5 +5,5 @@ import java.io.Serializable;
 
 public record ProcessResponseDTO(String processName, int origin, int processStatus, int value, String details) implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 }

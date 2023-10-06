@@ -10,17 +10,11 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class SocketManagerAtom {
-
     private ServerSocket serverSocket;
-
     private Socket FSocket;
     private Socket GSocket;
-    private final LinkedBlockingQueue<CalculationParameters> fQueue = new LinkedBlockingQueue<>();
-    private final LinkedBlockingQueue<CalculationParameters> gQueue = new LinkedBlockingQueue<>();
-    private final LinkedBlockingQueue<ProcessResponseDTO> resultQueue = new LinkedBlockingQueue<>();
 
     public void start() {
         try {
@@ -61,7 +55,8 @@ public class SocketManagerAtom {
     }
 
     private int receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        ProcessResponseDTO receivedProcessDTO = (ProcessResponseDTO) inputStream.readObject();
+        Object obj = inputStream.readObject();
+        ProcessResponseDTO receivedProcessDTO = (ProcessResponseDTO) obj;
         System.out.println("Received from " + receivedProcessDTO.processName());
         System.out.println("Put result from " + receivedProcessDTO.processName());
         return calculate(receivedProcessDTO);
@@ -106,7 +101,4 @@ public class SocketManagerAtom {
         }
     }
 
-    public LinkedBlockingQueue<ProcessResponseDTO> getResultQueue() {
-        return resultQueue;
-    }
 }

@@ -1,15 +1,19 @@
 package org.example.client;
 
-import org.example.client.calculator.CommonCalculator;
-import org.example.client.calculator.CommonCalculatorSocket;
+import org.example.client.calculator.CalculatorAtom;
+import org.example.client.socket.AtomClientSocketIO;
+import org.example.client.socket.ClientSocketAtomManager;
 import org.example.function.GFunction;
 
 public class ProcessG {
     public static void main(String[] args) {
+        AtomClientSocketIO clientSocketIO = new ClientSocketAtomManager();
+        CalculatorAtom commonCalculator = new CalculatorAtom(clientSocketIO);
+        clientSocketIO.connect();
         while (!Thread.interrupted()) {
-            CommonCalculator commonCalculator = new CommonCalculatorSocket();
             System.out.println("G starts!");
             commonCalculator.calculate(new GFunction(), "Process G");
         }
+        clientSocketIO.close();
     }
 }
