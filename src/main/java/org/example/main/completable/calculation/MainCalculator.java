@@ -29,7 +29,9 @@ public class MainCalculator {
         CompletableFuture<Integer> futureG = calculationManager.calculateAndGet("Process G", calculationParameters);
         try {
             Integer fx = futureF.get();
+            System.out.println("GOT F");
             Integer gx = futureG.get();
+            System.out.println("GOT G");
             int result = mathUtil.gcd(fx, gx);
             String successMessage = "Process finished successfully with result: " + result;
             memoizationMap.put(x, successMessage);

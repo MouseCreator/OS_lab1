@@ -4,12 +4,15 @@ import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.ProcessRequestDTO;
 import org.example.main.completable.dto.ProcessResponseDTO;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class SocketManagerImpl implements SocketManager {
+public class SocketManagerAtom implements SocketManager {
+
     private ServerSocket serverSocket;
     private final LinkedBlockingQueue<CalculationParameters> fQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<CalculationParameters> gQueue = new LinkedBlockingQueue<>();
@@ -56,14 +59,8 @@ public class SocketManagerImpl implements SocketManager {
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
-            Object method = inputStream.readObject();
-            if (method.equals("POST")) {
-                receiveData(inputStream);
-            } else if (method.equals("GET")) {
-                provideData(inputStream, outputStream);
-            } else {
-                throw new RuntimeException("Unknown method from client: " + method);
-            }
+            provideData(inputStream, outputStream);
+            receiveData(inputStream);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -104,7 +101,6 @@ public class SocketManagerImpl implements SocketManager {
         }
         System.out.println("Provided to " + name);
         if (params == null) {
-            System.out.println("EMPTY QUEUE!");
             throw new IOException("No data to provide");
         }
         int x = params.x();

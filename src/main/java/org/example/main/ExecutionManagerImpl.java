@@ -1,18 +1,13 @@
 package org.example.main;
 
-import org.example.memoization.MemoizationMap;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class ExecutionManagerImpl implements ExecutionManager {
 
-    private final MemoizationMap<Integer> memoizationMap;
-
     private final FunctionExecutor functionExecutor;
 
-    public ExecutionManagerImpl(MemoizationMap<Integer> memoizationMap, FunctionExecutor functionExecutor) {
-        this.memoizationMap = memoizationMap;
+    public ExecutionManagerImpl(FunctionExecutor functionExecutor) {
         this.functionExecutor = functionExecutor;
     }
 

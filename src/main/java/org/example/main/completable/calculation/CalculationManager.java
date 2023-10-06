@@ -6,22 +6,28 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class CalculationManager {
-    private final SocketManager socketManager;
     public CalculationManager(SocketManager socketManager) {
-        this.socketManager = socketManager;
+        resultQueue = socketManager.getResultQueue();
     }
 
     public CompletableFuture<Integer> calculateAndGet(String processName, CalculationParameters calculationParameters) {
         return calc(calculationParameters.x(), processName);
     }
-
+    private final LinkedBlockingQueue<ProcessResponseDTO> resultQueue;
    private CompletableFuture<Integer> calc(int x, String processName) {
         return CompletableFuture.supplyAsync(()->{
-            LinkedBlockingQueue<ProcessResponseDTO> resultQueue = socketManager.getResultQueue();
             while (true) {
                 ProcessResponseDTO result = resultQueue.peek();
-                if (result == null)
-                    continue;
+                synchronized (resultQueue) {
+                    while (result == null) {
+                        try {
+                            resultQueue.wait();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        result = resultQueue.peek();
+                    }
+                }
                 if (result.origin() == x && result.processName().equals(processName)) {
                     resultQueue.poll();
                     if (result.processStatus()==0) {

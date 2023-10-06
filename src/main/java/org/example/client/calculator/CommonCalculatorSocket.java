@@ -22,6 +22,7 @@ public class CommonCalculatorSocket implements CommonCalculator {
         Executor executor = new Executor(x, limit, function);
         try {
             Optional<Optional<Integer>> result = executor.execute().get(timeout, TimeUnit.MILLISECONDS);
+            System.out.println("Got result");
             if (result.isEmpty()) {
                 clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                         "Calculation finished with error");

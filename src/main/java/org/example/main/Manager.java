@@ -1,10 +1,8 @@
 package org.example.main;
 
-import org.example.memoization.MemoizationMap;
-
 public class Manager {
     private final ConsoleManager consoleManager = new ConsoleManager();
-    private final ExecutionManager executor = new ExecutionManagerImpl(new MemoizationMap<>(), new FunctionExecutor());
+    private final ExecutionManager executor = new ExecutionManagerImpl(new FunctionExecutor());
 
     public void start() {
         doMainLoop();

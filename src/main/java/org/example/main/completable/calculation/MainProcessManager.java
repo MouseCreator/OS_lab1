@@ -18,8 +18,8 @@ public class MainProcessManager implements AutoCloseable {
             throw new IllegalStateException("Main process manager is already running!");
         }
         socketManager = new SocketManagerImpl();
-        processF = processCreator.startFProcess();
         processG = processCreator.startGProcess();
+        processF = processCreator.startFProcess();
         new Thread(()->{
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(processG.getInputStream()))) {
                 String line;
