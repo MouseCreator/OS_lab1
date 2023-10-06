@@ -1,5 +1,7 @@
-package org.example.client;
+package org.example.client.calculator;
 
+import org.example.client.ClientIO;
+import org.example.client.SocketClientIo;
 import org.example.client.socket.ValueTimeoutRecord;
 import org.example.function.Function;
 import org.example.promise.Promise;
@@ -10,9 +12,9 @@ import java.util.concurrent.*;
 
 public class CommonCalculatorImpl implements CommonCalculator{
 
+    private final ClientIO clientIO = new SocketClientIo();
 
-
-    public void calculate(ClientIO clientIO, Function<Integer, Integer> function, String name) {
+    public void calculate(Function<Integer, Integer> function, String name) {
         ValueTimeoutRecord valueTimeoutRecord = clientIO.receiveValue();
         int x = valueTimeoutRecord.x();
         Promise<Optional<Optional<Integer>>> promise = new PromiseImpl<>();

@@ -1,5 +1,7 @@
 package org.example.client;
 
+import org.example.client.calculator.CommonCalculator;
+import org.example.client.calculator.CommonCalculatorImpl;
 import org.example.function.GFunction;
 
 import java.io.IOException;
@@ -10,7 +12,7 @@ public class ProcessG {
             CommonCalculator commonCalculator = new CommonCalculatorImpl();
             SocketClientIo socketClientIo = new SocketClientIo();
             socketClientIo.start();
-            commonCalculator.calculate(socketClientIo, new GFunction(), "Process G");
+            commonCalculator.calculate(new GFunction(), "Process G");
             socketClientIo.close();
         }
         catch (IOException e) {

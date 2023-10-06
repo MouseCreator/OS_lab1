@@ -22,7 +22,7 @@ public class SocketClientIo implements ClientIO {
             System.out.println(x);
             serverMessage = reader.readLine();
             long timeoutMillis = Long.parseLong(serverMessage);
-            return new ValueTimeoutRecord(x, timeoutMillis);
+            return new ValueTimeoutRecord(x, timeoutMillis, 0);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
