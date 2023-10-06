@@ -6,7 +6,7 @@ import org.example.main.completable.socket.SocketManager;
 import org.example.main.completable.socket.SocketManagerImpl;
 
 
-public class MainProcessManager {
+public class MainProcessManager implements AutoCloseable {
     private Process processF;
     private Process processG;
     private SocketManager socketManager;
@@ -21,7 +21,7 @@ public class MainProcessManager {
         return socketManager;
     }
 
-    public void stop() {
+    public void close() {
         if (processF != null) {
             processF.destroy();
         }
