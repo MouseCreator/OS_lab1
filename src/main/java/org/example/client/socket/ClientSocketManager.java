@@ -28,13 +28,14 @@ public class ClientSocketManager implements ClientSocketIO {
         }
     }
     @Override
-    public ValueTimeoutRecord receiveData() {
+    public ValueTimeoutRecord receiveData(String name) {
         try {
             Socket receiveSocket = new Socket(address, port);
             ObjectOutputStream output = new ObjectOutputStream(receiveSocket.getOutputStream());
             ObjectInputStream input = new ObjectInputStream(receiveSocket.getInputStream());
 
             output.writeObject("GET");
+            output.writeObject(name);
             ProcessRequestDTO processResponseDTO = (ProcessRequestDTO) input.readObject();
 
             receiveSocket.close();

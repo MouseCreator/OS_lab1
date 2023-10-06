@@ -2,7 +2,7 @@ package org.example.client.socket;
 
 public class ClientSocketMock implements ClientSocketIO{
     @Override
-    public ValueTimeoutRecord receiveData() {
+    public ValueTimeoutRecord receiveData(String name) {
         return new ValueTimeoutRecord(64, 1000L, 10);
     }
 

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 public class CommonCalculatorSocket implements CommonCalculator {
     private final ClientSocketIO clientSocketIO = new ClientSocketMock();
     public void calculate(Function<Integer, Integer> function, String name) {
-        ValueTimeoutRecord valueTimeoutRecord = clientSocketIO.receiveData();
+        ValueTimeoutRecord valueTimeoutRecord = clientSocketIO.receiveData(name);
         int x = valueTimeoutRecord.x();
         long timeout = valueTimeoutRecord.timeoutMillis();
         int limit = valueTimeoutRecord.limit();
