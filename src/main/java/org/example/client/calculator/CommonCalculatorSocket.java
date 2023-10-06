@@ -23,23 +23,25 @@ public class CommonCalculatorSocket implements CommonCalculator {
         try {
             Optional<Optional<Integer>> result = executor.execute().get(timeout, TimeUnit.MILLISECONDS);
             if (result.isEmpty()) {
-                clientSocketIO.sendData(name, Status.FATAL_ERROR, 0, "Calculation finished with error");
+                clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
+                        "Calculation finished with error");
                 return;
             }
             if (result.get().isEmpty()) {
-                clientSocketIO.sendData(name, Status.LIGHT_ERROR_LIMIT, 0, "Calculation finished with light error");
+                clientSocketIO.sendData(name, x, Status.LIGHT_ERROR_LIMIT, 0,
+                        "Calculation finished with light error");
                 return;
             }
             int fx = result.get().get();
-            clientSocketIO.sendData(name, Status.SUCCESS, fx, "Calculation finished with light error");
+            clientSocketIO.sendData(name, x, Status.SUCCESS, fx, "Calculation finished with light error");
         } catch (ExecutionException e) {
-            clientSocketIO.sendData(name, Status.FATAL_ERROR, 0,
+            clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                     "Calculation finished with execution error");
         } catch (TimeoutException e) {
-            clientSocketIO.sendData(name, Status.TIMEOUT, 0,
+            clientSocketIO.sendData(name, x, Status.TIMEOUT, 0,
                     "Execution timeout. Total light errors: " + executor.getLightErrors());
         } catch (InterruptedException e) {
-            clientSocketIO.sendData(name, Status.INTERRUPT, 0, "Calculation was interrupted");
+            clientSocketIO.sendData(name, x, Status.INTERRUPT, 0, "Calculation was interrupted");
         }
 
     }

@@ -17,9 +17,9 @@ public class Calculation<T> {
     public String printState() {
         Future.State state = future.state();
         return switch (state) {
-            case RUNNING -> name + " is in process";
-            case FAILED -> name + " has failed";
-            case SUCCESS -> name + " is finished";
+            case RUNNING -> name + " is running";
+            case FAILED -> name + " failed";
+            case SUCCESS -> name + "  finished";
             case CANCELLED -> name + " is cancelled";
         };
     }

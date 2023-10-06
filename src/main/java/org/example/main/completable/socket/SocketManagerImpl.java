@@ -1,5 +1,6 @@
 package org.example.main.completable.socket;
 
+import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.ProcessRequestDTO;
 import org.example.main.completable.dto.ProcessResponseDTO;
 
@@ -7,12 +8,14 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class SocketManagerImpl implements SocketManager {
     private ServerSocket serverSocket;
-    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final LinkedBlockingQueue<CalculationParameters> fQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<CalculationParameters> gQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<ProcessResponseDTO> resultQueue = new LinkedBlockingQueue<>();
+
     @Override
     public void start() {
         try {
@@ -24,33 +27,9 @@ public class SocketManagerImpl implements SocketManager {
             throw new RuntimeException(e);
         }
     }
-
-    private int x;
-    private long timeoutMillis;
-    public void set(int x, long timeout) {
-        try {
-            readWriteLock.writeLock().lock();
-            this.x = x;
-            this.timeoutMillis = timeout;
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-    }
-    public void setX(int x) {
-        try {
-            readWriteLock.writeLock().lock();
-            this.x = x;
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-    }
-    public void setTimeoutMillis(long t) {
-        try {
-            readWriteLock.writeLock().lock();
-            this.timeoutMillis = t;
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
+    public void set(CalculationParameters calculationParameters) {
+       fQueue.add(calculationParameters);
+       gQueue.add(calculationParameters);
     }
     public void doServerCycle() {
         while (!Thread.interrupted()) {
@@ -69,42 +48,47 @@ public class SocketManagerImpl implements SocketManager {
     }
 
     private void runFuture(Socket clientSocket) {
-        CompletableFuture.supplyAsync(()->{
-            try {
-                ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
-                Object method = inputStream.readObject();
-                if (method.equals("POST")) {
-                    return receiveData(inputStream);
-                } else if (method.equals("GET")) {
-                    provideData(outputStream);
-                } else {
-                    throw new RuntimeException("Unknown method from client: " + method);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            return 0;
-        });
-    }
-
-    private int receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        ProcessResponseDTO receivedProcessDTO = (ProcessResponseDTO) inputStream.readObject();
-        if (receivedProcessDTO.processStatus() == 0) {
-            return receivedProcessDTO.value();
-        } else {
-            throw new RuntimeException(receivedProcessDTO.details());
-        }
-    }
-
-    private void provideData(ObjectOutputStream outputStream) throws IOException {
         try {
-            readWriteLock.readLock().lock();
-            outputStream.writeObject(new ProcessRequestDTO(x, timeoutMillis));
-            outputStream.flush();
-        } finally {
-            readWriteLock.readLock().unlock();
+            ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+            Object method = inputStream.readObject();
+            if (method.equals("POST")) {
+                receiveData(inputStream);
+            } else if (method.equals("GET")) {
+                provideData(inputStream, outputStream);
+            } else {
+                throw new RuntimeException("Unknown method from client: " + method);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    private void receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        ProcessResponseDTO receivedProcessDTO = (ProcessResponseDTO) inputStream.readObject();
+        resultQueue.add(receivedProcessDTO);
+    }
+
+    private void provideData(ObjectInputStream inputStream, ObjectOutputStream outputStream) throws IOException, ClassNotFoundException {
+        String name = (String) inputStream.readObject();
+        CalculationParameters params;
+        if (name.equals("Process F")) {
+            params = fQueue.poll();
+        } else if (name.equals("Process G")) {
+            params = gQueue.poll();
+        } else {
+            throw new IOException("Unknown connection: " + name);
+        }
+        if (params == null) {
+            System.out.println("EMPTY QUEUE!");
+            throw new IOException("No data to provide");
+        }
+        int x = params.x();
+        long timeoutMillis = params.timeout();
+        int limitIterations = params.limitIterations();
+        outputStream.writeObject(new ProcessRequestDTO(x, timeoutMillis, limitIterations));
+        outputStream.flush();
+
     }
 
     @Override
@@ -116,5 +100,9 @@ public class SocketManagerImpl implements SocketManager {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public LinkedBlockingQueue<ProcessResponseDTO> getResultQueue() {
+        return resultQueue;
     }
 }

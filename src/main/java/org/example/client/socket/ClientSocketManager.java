@@ -7,13 +7,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class ClientSocketManager {
+public class ClientSocketManager implements ClientSocketIO {
 
     private final static String address = "127.0.0.1";
     private final static int port = 7777;
-    private void sendData(String name, int status, int result, String details) {
+    @Override
+    public void sendData(String name, int origin, int status, int result, String details) {
+
         try {
-            ProcessResponseDTO processRequestDTO = new ProcessResponseDTO(name, status, result, details);
+            ProcessResponseDTO processRequestDTO = new ProcessResponseDTO(name, origin, status, result, details);
             Socket sendSocket = new Socket(address, port);
             ObjectOutputStream output = new ObjectOutputStream(sendSocket.getOutputStream());
 
@@ -25,8 +27,8 @@ public class ClientSocketManager {
             throw new RuntimeException(e);
         }
     }
-
-    private ValueTimeoutRecord receiveData() {
+    @Override
+    public ValueTimeoutRecord receiveData() {
         try {
             Socket receiveSocket = new Socket(address, port);
             ObjectOutputStream output = new ObjectOutputStream(receiveSocket.getOutputStream());
@@ -36,7 +38,7 @@ public class ClientSocketManager {
             ProcessRequestDTO processResponseDTO = (ProcessRequestDTO) input.readObject();
 
             receiveSocket.close();
-            return new ValueTimeoutRecord(processResponseDTO.value(), processResponseDTO.timeout());
+            return new ValueTimeoutRecord(processResponseDTO.value(), processResponseDTO.timeout(), processResponseDTO.limitAttempts());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
