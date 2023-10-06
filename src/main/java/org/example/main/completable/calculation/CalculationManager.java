@@ -12,15 +12,16 @@ public class CalculationManager {
     }
 
     public CompletableFuture<Integer> calculateAndGet(String processName, CalculationParameters calculationParameters) {
-        socketManager.set(calculationParameters);
-       return calc(calculationParameters.x(), processName);
+        return calc(calculationParameters.x(), processName);
     }
 
    private CompletableFuture<Integer> calc(int x, String processName) {
         return CompletableFuture.supplyAsync(()->{
             LinkedBlockingQueue<ProcessResponseDTO> resultQueue = socketManager.getResultQueue();
-            while (resultQueue.peek() != null) {
+            while (true) {
                 ProcessResponseDTO result = resultQueue.peek();
+                if (result == null)
+                    continue;
                 if (result.origin() == x && result.processName().equals(processName)) {
                     resultQueue.poll();
                     if (result.processStatus()==0) {
@@ -30,7 +31,7 @@ public class CalculationManager {
                     }
                 }
             }
-            throw new RuntimeException(processName + ": Queue is empty! Cannot collect result");
+            //throw new RuntimeException(processName + ": Queue is empty! Cannot collect result");
         });
     }
 }

@@ -11,12 +11,13 @@ import java.util.concurrent.ExecutionException;
 public class MainCalculator {
     private final CalculationManager calculationManager;
     private final SocketManager socketManager;
+
+    private final MathUtil mathUtil = new MathUtil();
+    private final MemoizationMap<Integer> memoizationMap = new MemoizationMap<>();
     public MainCalculator(SocketManager socketManager) {
         this.socketManager = socketManager;
         this.calculationManager = new CalculationManager(socketManager);
     }
-    private final MathUtil mathUtil = new MathUtil();
-    private final MemoizationMap<Integer> memoizationMap = new MemoizationMap<>();
     public String calculate(CalculationParameters calculationParameters) {
         int x = calculationParameters.x();
         Optional<String> optionalResult = memoizationMap.get(x);

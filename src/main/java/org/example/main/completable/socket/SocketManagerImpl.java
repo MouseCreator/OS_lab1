@@ -7,7 +7,6 @@ import org.example.main.completable.dto.ProcessResponseDTO;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class SocketManagerImpl implements SocketManager {
@@ -27,12 +26,14 @@ public class SocketManagerImpl implements SocketManager {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
     public void set(CalculationParameters calculationParameters) {
        fQueue.add(calculationParameters);
        gQueue.add(calculationParameters);
     }
     public void doServerCycle() {
-        while (!Thread.interrupted()) {
+        while (!Thread.interrupted() && !serverSocket.isClosed()) {
             handleClient();
         }
     }
@@ -40,10 +41,9 @@ public class SocketManagerImpl implements SocketManager {
         Socket clientSocket;
         try {
             clientSocket = serverSocket.accept();
-            Thread clintThread = new Thread(() -> runFuture(clientSocket));
-            clintThread.start();
+            runFuture(clientSocket);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return;
         }
     }
 

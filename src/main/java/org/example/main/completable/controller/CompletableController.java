@@ -6,7 +6,6 @@ import org.example.main.completable.calculation.MainProcessManager;
 import org.example.main.completable.socket.SocketManager;
 
 public class CompletableController {
-
     private MainCalculator mainCalculator;
     public void start() {
         if (mainCalculator != null) {
@@ -15,6 +14,9 @@ public class CompletableController {
         try(MainProcessManager mainProcessManager = new MainProcessManager()) {
             SocketManager serverSocket = mainProcessManager.start();
             mainCalculator = new MainCalculator(serverSocket);
+            serverSocket.start();
+            Thread thread = new Thread(serverSocket::doServerCycle);
+            thread.start();
             doMainLoop();
         }
     }

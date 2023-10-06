@@ -18,6 +18,7 @@ public class ClientSocketManager implements ClientSocketIO {
             ProcessResponseDTO processRequestDTO = new ProcessResponseDTO(name, origin, status, result, details);
             Socket sendSocket = new Socket(address, port);
             ObjectOutputStream output = new ObjectOutputStream(sendSocket.getOutputStream());
+            ObjectInputStream input = new ObjectInputStream(sendSocket.getInputStream());
 
             output.writeObject("POST");
             output.writeObject(processRequestDTO);
@@ -39,6 +40,7 @@ public class ClientSocketManager implements ClientSocketIO {
             ProcessRequestDTO processResponseDTO = (ProcessRequestDTO) input.readObject();
 
             receiveSocket.close();
+            System.out.println("Received:" + processResponseDTO.value());
             return new ValueTimeoutRecord(processResponseDTO.value(), processResponseDTO.timeout(), processResponseDTO.limitAttempts());
         } catch (Exception e) {
             throw new RuntimeException(e);

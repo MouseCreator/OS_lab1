@@ -1,7 +1,7 @@
 package org.example.client.calculator;
 
 import org.example.client.socket.ClientSocketIO;
-import org.example.client.socket.ClientSocketMock;
+import org.example.client.socket.ClientSocketManager;
 import org.example.client.socket.ValueTimeoutRecord;
 import org.example.function.Function;
 import org.example.main.completable.dto.Status;
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class CommonCalculatorSocket implements CommonCalculator {
-    private final ClientSocketIO clientSocketIO = new ClientSocketMock();
+    private final ClientSocketIO clientSocketIO = new ClientSocketManager();
     public void calculate(Function<Integer, Integer> function, String name) {
         ValueTimeoutRecord valueTimeoutRecord = clientSocketIO.receiveData(name);
         int x = valueTimeoutRecord.x();

@@ -5,6 +5,8 @@ import org.example.main.completable.creator.ProcessCreatorImpl;
 import org.example.main.completable.socket.SocketManager;
 import org.example.main.completable.socket.SocketManagerImpl;
 
+import java.io.*;
+
 
 public class MainProcessManager implements AutoCloseable {
     private Process processF;
@@ -18,6 +20,16 @@ public class MainProcessManager implements AutoCloseable {
         socketManager = new SocketManagerImpl();
         processF = processCreator.startFProcess();
         processG = processCreator.startGProcess();
+        new Thread(()->{
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(processG.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
         return socketManager;
     }
 
