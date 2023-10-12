@@ -47,15 +47,15 @@ public class LongTermSocketManager {
             throw new RuntimeException(e);
         }
     }
-    public CompletableFuture<Integer> calculateF(CalculationParameters params) {
+    public CompletableFuture<FunctionOutput> calculateF(CalculationParameters params) {
         return CompletableFuture.supplyAsync(()->runFuture(inputStreamF, outputStreamF, params));
     }
 
-    public CompletableFuture<Integer> calculateG(CalculationParameters params) {
+    public CompletableFuture<FunctionOutput> calculateG(CalculationParameters params) {
         return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params));
     }
 
-    private int runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream, CalculationParameters params) {
+    private FunctionOutput runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream, CalculationParameters params) {
         try {
             provideData(outputStream, params);
             return receiveData(inputStream);
@@ -64,18 +64,9 @@ public class LongTermSocketManager {
         }
     }
 
-    private int receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+    private FunctionOutput receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
         Object obj = inputStream.readObject();
-        FunctionOutput receivedProcessDTO = (FunctionOutput) obj;
-        return calculate(receivedProcessDTO);
-    }
-
-    private int calculate(FunctionOutput result) {
-        if (result.processStatus()==0) {
-            return result.value();
-        } else {
-            throw new RuntimeException("Calculation failed: " + result.details());
-        }
+        return  (FunctionOutput) obj;
     }
 
     private void provideData(ObjectOutputStream outputStream, CalculationParameters params)

@@ -1,6 +1,7 @@
 package org.example.main.completable.atom;
 
 import org.example.main.completable.calculation.CalculationParameters;
+import org.example.main.completable.dto.FunctionOutput;
 import org.example.main.completable.socket.LongTermSocketManager;
 import org.example.memoization.MemoizationMap;
 import org.example.util.MathUtil;
@@ -24,11 +25,11 @@ public class AtomCalculator {
         if (optionalResult.isPresent()) {
             return optionalResult.get();
         }
-        CompletableFuture<Integer> futureF = socketManager.calculateF(calculationParameters);
-        CompletableFuture<Integer> futureG = socketManager.calculateG(calculationParameters);
+        CompletableFuture<FunctionOutput> futureF = socketManager.calculateF(calculationParameters);
+        CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(calculationParameters);
         try {
-            Integer fx = futureF.get();
-            Integer gx = futureG.get();
+            int fx = futureF.get().value();
+            int gx = futureG.get().value();
             int result = mathUtil.gcd(fx, gx);
             String successMessage = "Process finished successfully with result: " + result;
             memoizationMap.put(x, successMessage);

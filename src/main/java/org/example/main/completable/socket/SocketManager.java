@@ -1,12 +1,14 @@
 package org.example.main.completable.socket;
 
 import org.example.main.completable.calculation.CalculationParameters;
+import org.example.main.completable.dto.FunctionOutput;
 
 
 public interface SocketManager extends AutoCloseable {
     void start();
-    void doServerCycle();
+    void send(CalculationParameters parameters);
     void close();
-    void set(CalculationParameters calculationParameters);
+    FunctionOutput receiveF(CalculationParameters calculationParameters);
+    FunctionOutput receiveG(CalculationParameters calculationParameters);
 
 }
