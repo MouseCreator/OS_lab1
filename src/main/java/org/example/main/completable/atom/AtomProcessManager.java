@@ -2,7 +2,7 @@ package org.example.main.completable.atom;
 
 import org.example.main.completable.creator.ProcessCreator;
 import org.example.main.completable.creator.ProcessCreatorImpl;
-import org.example.main.completable.socket.SocketManagerAtom;
+import org.example.main.completable.socket.LongTermSocketManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,13 +11,13 @@ import java.io.InputStreamReader;
 public class AtomProcessManager {
     private Process processF;
     private Process processG;
-    private SocketManagerAtom socketManager;
+    private LongTermSocketManager socketManager;
     private final ProcessCreator processCreator = new ProcessCreatorImpl();
-    public SocketManagerAtom start() {
+    public LongTermSocketManager start() {
         if (socketManager != null) {
             throw new IllegalStateException("Main process manager is already running!");
         }
-        socketManager = new SocketManagerAtom();
+        socketManager = new LongTermSocketManager();
         processF = processCreator.startFProcess();
         processG = processCreator.startGProcess();
         new Thread(()->{

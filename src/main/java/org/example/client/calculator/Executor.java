@@ -1,42 +1,27 @@
 package org.example.client.calculator;
 
-import org.example.function.Function;
+import org.example.client.computation.Computation;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class Executor {
-    private final int x;
-    private final Function<Integer, Integer> function;
-    private final int limit;
-    private int lightErrors;
-    public Executor(int x, int limit, Function<Integer, Integer> function) {
-        this.x = x;
-        lightErrors = 0;
-        this.limit = limit;
-        this.function = function;
+    private final Computation computation;
+    public Executor(Computation computation) {
+        this.computation = computation;
     }
 
-    public CompletableFuture<Optional<Optional<Integer>>> execute() {
+    public CompletableFuture<Optional<Optional<Integer>>> execute(int x) {
         return CompletableFuture.supplyAsync(() -> {
-
-            for (int i = 0; i < limit; i++) {
-                Optional<Optional<Integer>> tempResult = function.compute(x);
-                if (tempResult.isEmpty()) {
-                    return tempResult;
-                }
-                if (tempResult.get().isEmpty()) {
-                    lightErrors++;
-                    continue;
-                }
-                return tempResult;
-
+            Optional<Optional<Integer>> result = Optional.empty();
+            while (result.isEmpty()) {
+                result = computation.compfunc(x);
             }
-            return Optional.of(Optional.empty());
+            return result;
         });
     }
 
     public int getLightErrors() {
-        return lightErrors;
+        return computation.errorCount();
     }
 }

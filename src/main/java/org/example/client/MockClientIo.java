@@ -1,11 +1,12 @@
 package org.example.client;
 
-import org.example.client.socket.ValueTimeoutRecord;
+import org.example.main.completable.dto.FunctionInput;
+import org.example.main.completable.dto.Signal;
 
 public class MockClientIo implements ClientIO{
     @Override
-    public ValueTimeoutRecord receiveValue() {
-        return new ValueTimeoutRecord(64, 1000L, 0);
+    public FunctionInput receiveValue() {
+        return new FunctionInput(64, 1000L, Signal.CONTINUE);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.example.main.completable.atom;
 
 import org.example.main.completable.calculation.CalculationParameters;
-import org.example.main.completable.socket.SocketManagerAtom;
+import org.example.main.completable.socket.LongTermSocketManager;
 import org.example.memoization.MemoizationMap;
 import org.example.util.MathUtil;
 
@@ -11,11 +11,11 @@ import java.util.concurrent.ExecutionException;
 
 public class AtomCalculator {
 
-    private final SocketManagerAtom socketManager;
+    private final LongTermSocketManager socketManager;
     private final MathUtil mathUtil = new MathUtil();
     private final MemoizationMap<Integer> memoizationMap = new MemoizationMap<>();
 
-    public AtomCalculator(SocketManagerAtom socketManager) {
+    public AtomCalculator(LongTermSocketManager socketManager) {
         this.socketManager = socketManager;
     }
     public String calculate(CalculationParameters calculationParameters) {

@@ -1,9 +1,9 @@
 package org.example.client.calculator;
 
 import org.example.client.ClientIO;
-import org.example.client.SocketClientIo;
-import org.example.client.socket.ValueTimeoutRecord;
-import org.example.function.Function;
+import org.example.client.MockClientIo;
+import org.example.client.computation.Computation;
+import org.example.main.completable.dto.FunctionInput;
 import org.example.promise.Promise;
 import org.example.promise.PromiseImpl;
 
@@ -12,15 +12,21 @@ import java.util.concurrent.*;
 
 public class CommonCalculatorImpl implements CommonCalculator{
 
-    private final ClientIO clientIO = new SocketClientIo();
+    private final ClientIO clientIO = new MockClientIo();
+    private final Computation computation;
+    private final String name;
+    public CommonCalculatorImpl(Computation computation, String name) {
+        this.computation = computation;
+        this.name = name;
+    }
 
-    public void calculate(Function<Integer, Integer> function, String name) {
-        ValueTimeoutRecord valueTimeoutRecord = clientIO.receiveValue();
-        int x = valueTimeoutRecord.x();
+    public void calculate() {
+        FunctionInput input = clientIO.receiveValue();
+        int x = input.value();
         Promise<Optional<Optional<Integer>>> promise = new PromiseImpl<>();
-        CalculationRunnable task = new CalculationRunnable(function, x);
+        CalculationRunnable task = new CalculationRunnable(computation, x);
         promise.execute(task);
-        long timeout = valueTimeoutRecord.timeoutMillis();
+        long timeout = input.timeout();
 
         try {
             Optional<Optional<Integer>> result = promise.get(timeout);
@@ -45,19 +51,19 @@ public class CommonCalculatorImpl implements CommonCalculator{
     }
 
     private static class CalculationRunnable implements Callable<Optional<Optional<Integer>>> {
-        private final Function<Integer, Integer> function;
+        private final Computation function;
         private final int x;
         private int lightErrorCount = 0;
 
-        public CalculationRunnable(Function<Integer, Integer> function, int x) {
-            this.function = function;
+        public CalculationRunnable(Computation computation, int x) {
+            this.function = computation;
             this.x = x;
         }
 
         @Override
         public Optional<Optional<Integer>> call() {
             while (!Thread.interrupted()) {
-                Optional<Optional<Integer>> result = function.compute(x);
+                Optional<Optional<Integer>> result = function.compfunc(x);
                 if (result.isEmpty()) //fatal error
                     return result;
                 if (result.get().isEmpty()) { //light error

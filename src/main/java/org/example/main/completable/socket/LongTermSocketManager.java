@@ -1,8 +1,8 @@
 package org.example.main.completable.socket;
 
 import org.example.main.completable.calculation.CalculationParameters;
-import org.example.main.completable.dto.ProcessRequestDTO;
-import org.example.main.completable.dto.ProcessResponseDTO;
+import org.example.main.completable.dto.FunctionInput;
+import org.example.main.completable.dto.FunctionOutput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,11 +11,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 
-public class SocketManagerAtom {
+public class LongTermSocketManager {
     private ServerSocket serverSocket;
     private Socket FSocket;
     private Socket GSocket;
-
     private ObjectOutputStream outputStreamF;
     private ObjectInputStream inputStreamF;
     private ObjectOutputStream outputStreamG;
@@ -67,13 +66,11 @@ public class SocketManagerAtom {
 
     private int receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
         Object obj = inputStream.readObject();
-        ProcessResponseDTO receivedProcessDTO = (ProcessResponseDTO) obj;
-        System.out.println("Received from " + receivedProcessDTO.processName());
-        System.out.println("Put result from " + receivedProcessDTO.processName());
+        FunctionOutput receivedProcessDTO = (FunctionOutput) obj;
         return calculate(receivedProcessDTO);
     }
 
-    private int calculate(ProcessResponseDTO result) {
+    private int calculate(FunctionOutput result) {
         if (result.processStatus()==0) {
             return result.value();
         } else {
@@ -84,9 +81,9 @@ public class SocketManagerAtom {
     private void provideData(ObjectOutputStream outputStream, CalculationParameters params)
             throws IOException {
         int x = params.x();
-        long timeoutMillis = params.timeout();
-        int limitIterations = params.limitIterations();
-        outputStream.writeObject(new ProcessRequestDTO(x, timeoutMillis, limitIterations));
+        long timeout = params.timeout();
+        int signal = params.signal();
+        outputStream.writeObject(new FunctionInput(x, timeout, signal));
         outputStream.flush();
     }
 

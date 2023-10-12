@@ -1,7 +1,8 @@
 package org.example.main.completable.atom;
 
 import org.example.main.completable.calculation.CalculationParameters;
-import org.example.main.completable.socket.SocketManagerAtom;
+import org.example.main.completable.dto.Signal;
+import org.example.main.completable.socket.LongTermSocketManager;
 
 public class AtomController {
     private AtomCalculator atomCalculator;
@@ -12,7 +13,7 @@ public class AtomController {
         }
         try {
             AtomProcessManager atomProcessManager = new AtomProcessManager();
-            SocketManagerAtom serverSocket = atomProcessManager.start();
+            LongTermSocketManager serverSocket = atomProcessManager.start();
 
             atomCalculator = new AtomCalculator(serverSocket);
 
@@ -27,11 +28,12 @@ public class AtomController {
     }
 
     private void doMainLoop() {
-        String result = atomCalculator.calculate(new CalculationParameters(64, 1000L, 10));
+        String result = atomCalculator.calculate(new CalculationParameters(0, 5000L, Signal.CONTINUE));
         System.out.println(result);
-        String result2 = atomCalculator.calculate(new CalculationParameters(128, 1000L, 10));
+        String result2 = atomCalculator.calculate(new CalculationParameters(1, 5000L, Signal.CONTINUE));
         System.out.println(result2);
-        String result3 = atomCalculator.calculate(new CalculationParameters(512, 1000L, 10));
+        String result3 = atomCalculator.calculate(new CalculationParameters(2, 5000L, Signal.CONTINUE));
         System.out.println(result3);
+        atomCalculator.calculate(new CalculationParameters(512, 1000L, Signal.SHUTDOWN));
     }
 }

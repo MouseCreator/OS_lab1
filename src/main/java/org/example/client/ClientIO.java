@@ -1,9 +1,9 @@
 package org.example.client;
 
-import org.example.client.socket.ValueTimeoutRecord;
+import org.example.main.completable.dto.FunctionInput;
 
 public interface ClientIO {
-    ValueTimeoutRecord receiveValue();
+    FunctionInput receiveValue();
     void  sendToServer(String status, String value);
 }
 

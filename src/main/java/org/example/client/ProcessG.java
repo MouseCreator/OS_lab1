@@ -1,19 +1,19 @@
 package org.example.client;
 
-import org.example.client.calculator.CalculatorAtom;
-import org.example.client.socket.AtomClientSocketIO;
-import org.example.client.socket.ClientSocketAtomManager;
-import org.example.function.GFunction;
+import org.example.client.calculator.LongTermCalculator;
+import org.example.client.computation.Computation;
+import org.example.client.socket.ClientSocketMock;
+import org.example.client.socket.LongTermClientSocketIO;
 
 public class ProcessG {
     public static void main(String[] args) {
-        AtomClientSocketIO clientSocketIO = new ClientSocketAtomManager();
-        CalculatorAtom commonCalculator = new CalculatorAtom(clientSocketIO);
+        LongTermClientSocketIO clientSocketIO = new ClientSocketMock();
+        Computation computation = new Computation(10);
+        LongTermCalculator commonCalculator = new LongTermCalculator(clientSocketIO, computation, "Process G");
+        System.out.println("G starts!");
         clientSocketIO.connect();
-        while (!Thread.interrupted()) {
-            System.out.println("G starts!");
-            commonCalculator.calculate(new GFunction(), "Process G");
-        }
+        commonCalculator.calculate();
         clientSocketIO.close();
+        System.out.println("G closes!");
     }
 }

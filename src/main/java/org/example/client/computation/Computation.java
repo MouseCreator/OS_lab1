@@ -6,7 +6,12 @@ import java.util.concurrent.TimeUnit;
 public class Computation {
     private final int CASE1_ATTEMPTS = 3;
     private int attempt = CASE1_ATTEMPTS;
-    public Optional<Optional<Double>> compfunc(int n) {
+    private final int returnValue;
+    public Computation(int returnValue) {
+        this.returnValue = returnValue;
+    }
+
+    public Optional<Optional<Integer>> compfunc(int n) {
         switch (n) {
             case 0 -> {
                 try {
@@ -26,7 +31,7 @@ public class Computation {
                 if (attempt != 0)
                     return Optional.empty();
                 attempt = CASE1_ATTEMPTS;
-                return Optional.of(Optional.of(5d));
+                return Optional.of(Optional.of(returnValue));
             }
             default -> {
             }
@@ -34,5 +39,9 @@ public class Computation {
 
         try { Thread.currentThread().join(); } catch (InterruptedException ie) {}
         return Optional.of(Optional.empty());
+    }
+
+    public int errorCount() {
+        return CASE1_ATTEMPTS - attempt;
     }
 }
