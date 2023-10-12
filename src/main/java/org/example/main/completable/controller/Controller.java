@@ -77,9 +77,27 @@ public class Controller {
             case "print", "p" -> printMap(parameters);
             case "timeout", "t" -> changeTimeout(parameters);
             case "menu", "m" -> menuMode();
+            case "now", "n" -> printStatus();
             case "example", "e" -> executeExample();
             default -> printUnknown();
         }
+    }
+
+    private void printHelp() {
+        String help = """
+                HELP:
+                \tfunc, f [integer]... - calculate function at given values. Example: f 0 1 2 3
+                \tstop, s - cancel calculation
+                \tclose, c - close the program
+                \thelp, h - print help
+                \ttimeout, t [integer] - change timeout (milliseconds)
+                \tclear, l - clear memoization map
+                \tprint, p [integer]... - print memoization map at given values
+                \texample, e - executes "f 0 1 2 3"
+                \tnow, n - print calculations statuses at the moment
+                \tmenu, m - enter menu mode
+                """;
+        System.out.println(help);
     }
 
     private void changeTimeout(String[] parameters) {
@@ -130,19 +148,9 @@ public class Controller {
         System.err.println(message);
     }
 
-    private void printHelp() {
-        String help = """
-                HELP:
-                \tfunc, f [integer]... - calculate function at given values. Example: f 0 1 2 3
-                \tstop, s - cancel calculation
-                \tclose, c - close the program
-                \thelp, h - print help
-                \ttimeout, t [integer] - change timeout (milliseconds)
-                \tclear, l - clear memoization map
-                \tprint, p [integer]... - print memoization map at given values
-                \texample, e - executes "f 0 1 2 3"
-                \tmenu, m - enter menu mode
-                """;
-        System.out.println(help);
+    private void printStatus() {
+
     }
+
+
 }
