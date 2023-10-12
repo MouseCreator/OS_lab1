@@ -3,13 +3,16 @@ package org.example.main.completable.socket;
 import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.FunctionOutput;
+import org.example.main.completable.dto.Status;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class LongTermSocketManager {
     private ServerSocket serverSocket;
@@ -48,25 +51,21 @@ public class LongTermSocketManager {
         }
     }
     public CompletableFuture<FunctionOutput> calculateF(CalculationParameters params) {
-        return CompletableFuture.supplyAsync(()->runFuture(inputStreamF, outputStreamF, params));
+        return CompletableFuture.supplyAsync(()->runFuture(inputStreamF, outputStreamF, params, currentF));
     }
 
     public CompletableFuture<FunctionOutput> calculateG(CalculationParameters params) {
-        return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params));
+        return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params, currentG));
     }
 
-    private FunctionOutput runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream, CalculationParameters params) {
+    private FunctionOutput runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream,
+                                     CalculationParameters params, BlockingQueue<FunctionOutput> queue) {
         try {
             provideData(outputStream, params);
-            return receiveData(inputStream);
+            return receiveData(inputStream, params.x(), queue);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private FunctionOutput receiveData(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        Object obj = inputStream.readObject();
-        return  (FunctionOutput) obj;
     }
 
     private void provideData(ObjectOutputStream outputStream, CalculationParameters params)
@@ -76,6 +75,30 @@ public class LongTermSocketManager {
         int signal = params.signal();
         outputStream.writeObject(new FunctionInput(x, timeout, signal));
         outputStream.flush();
+    }
+
+    private FunctionOutput receiveData(ObjectInputStream inputStream, int waitsFor,
+                                       BlockingQueue<FunctionOutput> queue) throws IOException, ClassNotFoundException {
+        Object obj = inputStream.readObject();
+        FunctionOutput result = (FunctionOutput) obj;
+        queue.add(result);
+        return getFunctionOutput(waitsFor, queue);
+    }
+
+    private final BlockingQueue<FunctionOutput> currentF = new LinkedBlockingQueue<>();
+    private final BlockingQueue<FunctionOutput> currentG = new LinkedBlockingQueue<>();
+
+    private FunctionOutput getFunctionOutput(int waitsFor, final BlockingQueue<FunctionOutput> outputQueue) {
+        synchronized (outputQueue) {
+            while (outputQueue.isEmpty() || outputQueue.peek().origin() != waitsFor) {
+                try {
+                    outputQueue.wait();
+                } catch (InterruptedException e) {
+                    return new FunctionOutput("Main", waitsFor, Status.INTERRUPT, 0, "Calculation was interrupted");
+                }
+            }
+            return outputQueue.poll();
+        }
     }
 
     public void close() {
