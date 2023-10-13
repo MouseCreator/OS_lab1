@@ -16,21 +16,22 @@ import java.util.concurrent.ExecutionException;
 public class AdvancedController {
     public void start() {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
-            processCreator.startFProcess();
-            processCreator.startGProcess();
+            Process processF = processCreator.startFProcess();
+            Process processG = processCreator.startGProcess();
 
-            startSocket();
+            startSocket(processF, processG);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void startSocket() {
+    private void startSocket(Process p1, Process p2) {
         try(SocketManager socketManager = new LongTermSocketManager()) {
             socketManager.start();
             socketManager.accept();
-
             calculate(socketManager);
+            p1.waitFor();
+            p2.waitFor();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -46,6 +47,8 @@ public class AdvancedController {
                 calculatingThread.start();
             } catch (Exception e) {
                 if (input.equals("close") || input.equals("c")) {
+                    socketManager.shutdownF();
+                    socketManager.shutdownG();
                     return;
                 } else if (input.equals("cancel") || input.equals("d")) {
                     socketManager.cancelF();
@@ -87,6 +90,7 @@ public class AdvancedController {
             System.out.println("Calculation is interrupted!");
         } catch (ExecutionException e) {
             System.out.println("Execution error!");
+            System.out.println(e);
         }
     }
 }

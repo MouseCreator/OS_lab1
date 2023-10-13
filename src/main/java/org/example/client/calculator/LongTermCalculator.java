@@ -45,6 +45,7 @@ public class LongTermCalculator implements CommonCalculator{
         initPool();
     }
     private void stopExecution() {
+        pool.shutdownNow();
         pool.close();
     }
 

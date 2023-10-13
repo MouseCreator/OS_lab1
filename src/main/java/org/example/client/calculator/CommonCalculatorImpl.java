@@ -15,6 +15,7 @@ public class CommonCalculatorImpl implements CommonCalculator{
     private final ClientIO clientIO = new MockClientIo();
     private final Computation computation;
     private final String name;
+
     public CommonCalculatorImpl(Computation computation, String name) {
         this.computation = computation;
         this.name = name;

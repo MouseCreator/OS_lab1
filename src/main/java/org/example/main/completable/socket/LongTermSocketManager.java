@@ -67,8 +67,29 @@ public class LongTermSocketManager implements SocketManager {
     public void cancelG() {
         cancel(outputStreamG);
     }
+
+
     private void cancel(ObjectOutputStream outputStream) {
         int signal = Signal.RESTART;
+        try {
+            outputStream.writeObject(new FunctionInput(0, 1L, signal));
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void shutdownF() {
+        shutdown(outputStreamF);
+    }
+
+    @Override
+    public void shutdownG() {
+        shutdown(outputStreamG);
+    }
+    private void shutdown(ObjectOutputStream outputStream) {
+        int signal = Signal.SHUTDOWN;
         try {
             outputStream.writeObject(new FunctionInput(0, 1L, signal));
             outputStream.flush();
