@@ -21,13 +21,13 @@ public class Controller {
     }
     private void doMainLoop() {
         while (!closed) {
-            String expression = readString(">");
+            String expression = readString("> ");
             execute(expression);
         }
     }
 
     private String readString(String prompt) {
-        String inputLine = "";
+        String inputLine;
         do {
             System.out.print(prompt);
             inputLine = scanner.nextLine();

@@ -34,7 +34,7 @@ public class LongTermClientSocketManager implements LongTermClientSocketIO {
         }
     }
 
-    public synchronized FunctionInput receiveData() {
+    public FunctionInput receiveData() {
         try {
             return (FunctionInput) inputStream.readObject();
         } catch (Exception e) {
@@ -43,10 +43,12 @@ public class LongTermClientSocketManager implements LongTermClientSocketIO {
     }
 
 
-    public synchronized void sendData(String name, int origin, int status, int result, String details) {
+    public void sendData(String name, int origin, int status, int result, String details) {
         try {
+            System.out.println("Before");
             FunctionOutput response = new FunctionOutput(name, origin, status, result, details);
             outputStream.writeObject(response);
+            System.out.println("After");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

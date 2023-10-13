@@ -39,9 +39,9 @@ public class CalculationManager {
             memoizationMap.put(parameters.x(), calculationResult);
             return "Result: " + calculationResult;
         } else {
-            String result = "Computation failed:\nF status:";
+            String result = "Computation failed:\nF status: ";
             result += FOutput.details();
-            result += "\nG status\n";
+            result += "\nG status: ";
             result += GOutput.details();
             return result;
         }

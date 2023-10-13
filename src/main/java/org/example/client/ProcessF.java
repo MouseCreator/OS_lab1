@@ -10,10 +10,11 @@ public class ProcessF {
         LongTermClientSocketIO clientSocketIO = new LongTermClientSocketManager();
         Computation computation = new Computation(15);
         LongTermCalculator calculator = new LongTermCalculator(clientSocketIO, computation, "Process F");
-        clientSocketIO.connect();
         System.out.println("F starts!");
+        clientSocketIO.connect();
         calculator.calculate();
         clientSocketIO.close();
+        System.out.println("F closes!");
     }
 
 

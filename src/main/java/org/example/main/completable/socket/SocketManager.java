@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface SocketManager extends AutoCloseable {
     void start();
+    void accept();
     void close();
     CompletableFuture<FunctionOutput> calculateF(CalculationParameters params);
     CompletableFuture<FunctionOutput> calculateG(CalculationParameters params);

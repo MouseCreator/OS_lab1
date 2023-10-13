@@ -24,6 +24,8 @@ public class LongTermCalculator implements CommonCalculator{
     public void calculate() {
         while (!Thread.interrupted()) {
             FunctionInput input = clientSocketIO.receiveData();
+            int x = input.value();
+            System.out.println(name + " received " + x);
             int signal = input.signal();
             if (signal == Signal.RESTART) {
                 interruptAll();
@@ -70,14 +72,17 @@ public class LongTermCalculator implements CommonCalculator{
 
     private void computeFunctionAt(int x, long timeout, Executor executor) throws InterruptedException, ExecutionException, TimeoutException {
         Optional<Optional<Integer>> result = executor.execute(x).get(timeout, TimeUnit.MILLISECONDS);
+        System.out.println("Result " + result);
         if (result.isEmpty()) {
             clientSocketIO.sendData(name, x, Status.LIGHT_ERROR_LIMIT, 0,
                     "Calculation finished with light error. Attempts:"  + executor.getLightErrors());
             return;
         }
         if (result.get().isEmpty()) {
+            System.out.println("F");
             clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                     "Calculation finished with fatal error. Attempts: " + executor.getLightErrors());
+            System.out.println("Fatal error " + x);
             return;
         }
         int fx = result.get().get();
