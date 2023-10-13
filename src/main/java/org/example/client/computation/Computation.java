@@ -41,6 +41,22 @@ public class Computation {
                     return Optional.of(Optional.empty());
                 }
             }
+            case 3 -> {
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                    return Optional.of(Optional.of(9));
+                } catch (InterruptedException ie) {
+                    return Optional.of(Optional.empty());
+                }
+            }
+            case 4 -> {
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                    return Optional.of(Optional.of(20));
+                } catch (InterruptedException ie) {
+                    return Optional.of(Optional.empty());
+                }
+            }
             default -> {
             }
         }

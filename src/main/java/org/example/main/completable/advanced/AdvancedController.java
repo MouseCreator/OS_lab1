@@ -7,16 +7,20 @@ import org.example.main.completable.dto.FunctionOutput;
 import org.example.main.completable.dto.Signal;
 import org.example.main.completable.socket.LongTermSocketManager;
 import org.example.main.completable.socket.SocketManager;
+import org.example.memoization.MemoizationMap;
 import org.example.util.MathUtil;
 import org.example.util.Reader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class AdvancedController {
+
+    private final MemoizationMap<Integer, Integer> memoizationMap = new MemoizationMap<>();
     public void start() {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
@@ -63,6 +67,12 @@ public class AdvancedController {
             int x;
             try {
                 x = Integer.parseInt(input);
+                if (memoizationMap.isComputed(x)) {
+                    Optional<Integer> result = memoizationMap.get(x);
+                    assert result.isPresent();
+                    System.out.println("From memoization map: F(" + x + ") = " + result.get());
+                    return;
+                }
                 Thread calculatingThread = new Thread(() -> calculateAsync(socketManager, x));
                 calculatingThread.start();
             } catch (Exception e) {
@@ -91,12 +101,6 @@ public class AdvancedController {
         }
     }
 
-    private void cancelIfPresent(CompletableFuture<String> currentComputation) {
-        if (currentComputation != null) {
-            currentComputation.cancel(true);
-        }
-    }
-
     private void calculateAsync(SocketManager socketManager, int x) {
         CompletableFuture<FunctionOutput> futureF = socketManager.calculateF(new CalculationParameters(x, 4000L, Signal.CONTINUE));
         CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(new CalculationParameters(x, 4000L, Signal.CONTINUE));
@@ -106,7 +110,9 @@ public class AdvancedController {
             FunctionOutput outputG = futureG.get();
 
             if (outputF.processStatus() == 0 && outputG.processStatus() == 0) {
-                System.out.println("Result(" + x + "): " + mathUtil.gcd(outputG.value(), outputF.value()));
+                int result = mathUtil.gcd(outputG.value(), outputF.value());
+                memoizationMap.put(x,result);
+                System.out.println("Result(" + x + "): " + result);
             } else {
                 String s = "Error! Cannot calculate function at " + x;
                 s += ("\nProcess F " + outputF.details());
