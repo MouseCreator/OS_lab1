@@ -10,7 +10,6 @@ public class Executor {
     public Executor(Computation computation) {
         this.computation = computation;
     }
-
     private int lightErrors = 0;
     public CompletableFuture<Optional<Optional<Integer>>> execute(int x) {
         return CompletableFuture.supplyAsync(() -> {

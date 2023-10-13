@@ -16,4 +16,6 @@ public interface SocketManager extends AutoCloseable {
     void cancelG();
     void shutdownF();
     void shutdownG();
+    String statusF();
+    String statusG();
 }

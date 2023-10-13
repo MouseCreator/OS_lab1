@@ -27,14 +27,13 @@ public class LongTermCalculator implements CommonCalculator{
             int x = input.value();
             System.out.println(name + " received " + x);
             int signal = input.signal();
-            if (signal == Signal.RESTART) {
-                interruptAll();
+            switch (signal) {
+                case Signal.CONTINUE -> executeAsync(input);
+                case Signal.RESTART -> interruptAll();
+                case Signal.SHUTDOWN -> {stopExecution(); return;}
+                case Signal.STATUS -> getStatus();
             }
-            if(signal == Signal.SHUTDOWN) {
-                stopExecution();
-                break;
-            }
-            executeAsync(input);
+
         }
     }
     private void initPool() {
@@ -66,9 +65,15 @@ public class LongTermCalculator implements CommonCalculator{
             clientSocketIO.sendData(name, x, Status.TIMEOUT, 0,
                     "Execution timeout. Total light errors: " + executor.getLightErrors());
         } catch (InterruptedException e) {
-            clientSocketIO.sendData(name, x, Status.INTERRUPT, 0, "Calculation was interrupted");
+            clientSocketIO.sendData(name, x, Status.INTERRUPT, 0,
+                    "Calculation was interrupted. Total light errors: " + executor.getLightErrors());
             Thread.currentThread().interrupt();
         }
+    }
+
+    private void getStatus() {
+        System.out.println("Status called");
+        clientSocketIO.sendData(name, 0, Status.STATUS, 0, "Status unknown");
     }
 
     private void computeFunctionAt(int x, long timeout, Executor executor) throws InterruptedException, ExecutionException, TimeoutException {
@@ -80,7 +85,6 @@ public class LongTermCalculator implements CommonCalculator{
             return;
         }
         if (result.get().isEmpty()) {
-            System.out.println("F");
             clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
                     "Calculation finished with fatal error. Attempts: " + executor.getLightErrors());
             System.out.println("Fatal error " + x);

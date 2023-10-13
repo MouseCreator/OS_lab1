@@ -10,6 +10,9 @@ import org.example.main.completable.socket.SocketManager;
 import org.example.util.MathUtil;
 import org.example.util.Reader;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -18,11 +21,28 @@ public class AdvancedController {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
             Process processG = processCreator.startGProcess();
-
+            initListener(processG);
+            initListener(processF);
             startSocket(processF, processG);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void initListener(Process process) {
+        Thread t = new Thread(()->{
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     private void startSocket(Process p1, Process p2) {
@@ -46,16 +66,25 @@ public class AdvancedController {
                 Thread calculatingThread = new Thread(() -> calculateAsync(socketManager, x));
                 calculatingThread.start();
             } catch (Exception e) {
-                if (input.equals("close") || input.equals("c")) {
-                    socketManager.shutdownF();
-                    socketManager.shutdownG();
-                    return;
-                } else if (input.equals("cancel") || input.equals("d")) {
-                    socketManager.cancelF();
-                    socketManager.cancelG();
-                } else {
-                    System.out.println("Unknown command");
-                    continue;
+                switch (input) {
+                    case "close", "c" -> {
+                        socketManager.shutdownF();
+                        socketManager.shutdownG();
+                        return;
+                    }
+                    case "cancel", "d" -> {
+                        socketManager.cancelF();
+                        socketManager.cancelG();
+                    }
+                    case "status", "s" -> {
+                        String status1 = socketManager.statusF();
+                        String status2 = socketManager.statusG();
+                        System.out.println(status1 + "\n" + status2);
+                    }
+                    default -> {
+                        System.out.println("Unknown command");
+                        continue;
+                    }
                 }
             }
 
@@ -90,7 +119,7 @@ public class AdvancedController {
             System.out.println("Calculation is interrupted!");
         } catch (ExecutionException e) {
             System.out.println("Execution error!");
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 }

@@ -14,6 +14,8 @@ import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class LongTermSocketManager implements SocketManager {
     private ServerSocket serverSocket;
@@ -52,11 +54,11 @@ public class LongTermSocketManager implements SocketManager {
         }
     }
     public CompletableFuture<FunctionOutput> calculateF(CalculationParameters params) {
-        return CompletableFuture.supplyAsync(()->runFuture(inputStreamF, outputStreamF, params, currentF));
+        return CompletableFuture.supplyAsync(()->runFuture(inputStreamF, outputStreamF, params, currentF, FLock));
     }
 
     public CompletableFuture<FunctionOutput> calculateG(CalculationParameters params) {
-        return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params, currentG));
+        return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params, currentG, GLock));
     }
 
     @Override
@@ -88,6 +90,31 @@ public class LongTermSocketManager implements SocketManager {
     public void shutdownG() {
         shutdown(outputStreamG);
     }
+
+    @Override
+    public String statusF() {
+        return getStatus(inputStreamF, outputStreamF);
+    }
+
+    @Override
+    public String statusG() {
+        return getStatus(inputStreamG, outputStreamG);
+    }
+
+    private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream) {
+        try {
+            int signal = Signal.STATUS;
+            outputStream.writeObject(new FunctionInput(0, 1000L, signal));
+            outputStream.flush();
+
+            Object obj = inputStream.readObject();
+            FunctionOutput result = (FunctionOutput) obj;
+            return result.details();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void shutdown(ObjectOutputStream outputStream) {
         int signal = Signal.SHUTDOWN;
         try {
@@ -99,16 +126,19 @@ public class LongTermSocketManager implements SocketManager {
     }
 
     private FunctionOutput runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream,
-                                     CalculationParameters params, BlockingQueue<FunctionOutput> queue) {
+                                     CalculationParameters params, BlockingQueue<FunctionOutput> queue, Lock lock) {
         try {
-            provideData(outputStream, params);
-            return receiveData(inputStream, params.x(), queue);
+            provideData(outputStream, params, lock);
+            return receiveData(inputStream, params.x(), queue, lock);
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void provideData(ObjectOutputStream outputStream, CalculationParameters params)
+    private final Lock FLock = new ReentrantLock();
+    private final Lock GLock = new ReentrantLock();
+
+    private void provideData(ObjectOutputStream outputStream, CalculationParameters params, Lock lock)
             throws IOException {
         int x = params.x();
         long timeout = params.timeout();
@@ -118,9 +148,13 @@ public class LongTermSocketManager implements SocketManager {
     }
 
     private FunctionOutput receiveData(ObjectInputStream inputStream, int waitsFor,
-                                       BlockingQueue<FunctionOutput> queue) throws IOException, ClassNotFoundException {
+                                       BlockingQueue<FunctionOutput> queue, Lock lock) throws IOException, ClassNotFoundException {
+        System.out.println("waits");
+        lock.lock();
         Object obj = inputStream.readObject();
+        lock.unlock();
         FunctionOutput result = (FunctionOutput) obj;
+        System.out.println("rcv" + result);
         queue.add(result);
         return getFunctionOutput(waitsFor, queue);
     }
