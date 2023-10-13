@@ -27,6 +27,7 @@ public class Main {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            processG.destroy();
         }).start();
 
         new Thread(()->{
@@ -38,6 +39,7 @@ public class Main {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            processF.destroy();
         }).start();
         socketManager.start();
         socketManager.accept();

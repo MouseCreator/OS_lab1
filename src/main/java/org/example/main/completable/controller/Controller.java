@@ -1,14 +1,12 @@
 package org.example.main.completable.controller;
 
+import org.example.main.completable.basic.Reader;
 import org.example.main.completable.calculation.CalculationMain;
 import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.Signal;
 
-import java.util.Scanner;
-
 public class Controller {
     private boolean closed = false;
-    private final Scanner scanner = new Scanner(System.in);
     private long timeout = 5000L;
     private final CalculationMain calculationMain;
     public Controller(CalculationMain calculationMain) {
@@ -27,12 +25,7 @@ public class Controller {
     }
 
     private String readString(String prompt) {
-        String inputLine;
-        do {
-            System.out.print(prompt);
-            inputLine = scanner.nextLine();
-        } while (inputLine == null || inputLine.isEmpty());
-        return inputLine;
+        return Reader.read(prompt);
     }
 
     private void execute(String expression) {
