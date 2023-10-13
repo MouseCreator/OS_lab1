@@ -35,17 +35,21 @@ public class AdvancedController {
             throw new RuntimeException(e);
         }
     }
-    private CompletableFuture<String> result;
+
     private void calculate(SocketManager socketManager) {
         while (true) {
             String input = Reader.read("> ");
             int x;
             try {
                 x = Integer.parseInt(input);
-                calculateAsync(socketManager, x);
+                Thread calculatingThread = new Thread(() -> calculateAsync(socketManager, x));
+                calculatingThread.start();
             } catch (Exception e) {
-                if (input.equals("close")) {
+                if (input.equals("close") || input.equals("c")) {
                     return;
+                } else if (input.equals("cancel") || input.equals("d")) {
+                    socketManager.cancelF();
+                    socketManager.cancelG();
                 } else {
                     System.out.println("Unknown command");
                     continue;
@@ -54,6 +58,13 @@ public class AdvancedController {
 
         }
     }
+
+    private void cancelIfPresent(CompletableFuture<String> currentComputation) {
+        if (currentComputation != null) {
+            currentComputation.cancel(true);
+        }
+    }
+
     private void calculateAsync(SocketManager socketManager, int x) {
         CompletableFuture<FunctionOutput> futureF = socketManager.calculateF(new CalculationParameters(x, 4000L, Signal.CONTINUE));
         CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(new CalculationParameters(x, 4000L, Signal.CONTINUE));
@@ -65,14 +76,15 @@ public class AdvancedController {
             if (outputF.processStatus() == 0 && outputG.processStatus() == 0) {
                 System.out.println("Result: " + mathUtil.gcd(outputG.value(), outputF.value()));
             } else {
-                System.out.println("Error!");
-                System.out.println("Process F " + outputF.details());
-                System.out.println("Process G " + outputG.details());
+                String s = "Error!";
+                s += ("\nProcess F " + outputF.details());
+                s += ("\nProcess G " + outputG.details());
+                System.out.println(s);
             }
         } catch (InterruptedException e) {
-            System.out.println("Calculation is interrupted!");
             futureF.cancel(true);
             futureG.cancel(true);
+            System.out.println("Calculation is interrupted!");
         } catch (ExecutionException e) {
             System.out.println("Execution error!");
         }

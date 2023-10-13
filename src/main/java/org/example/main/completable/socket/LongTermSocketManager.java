@@ -3,6 +3,7 @@ package org.example.main.completable.socket;
 import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.FunctionOutput;
+import org.example.main.completable.dto.Signal;
 import org.example.main.completable.dto.Status;
 
 import java.io.IOException;
@@ -56,6 +57,24 @@ public class LongTermSocketManager implements SocketManager {
 
     public CompletableFuture<FunctionOutput> calculateG(CalculationParameters params) {
         return CompletableFuture.supplyAsync(()->runFuture(inputStreamG, outputStreamG, params, currentG));
+    }
+
+    @Override
+    public void cancelF() {
+        cancel(outputStreamF);
+    }
+    @Override
+    public void cancelG() {
+        cancel(outputStreamG);
+    }
+    private void cancel(ObjectOutputStream outputStream) {
+        int signal = Signal.RESTART;
+        try {
+            outputStream.writeObject(new FunctionInput(0, 1L, signal));
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private FunctionOutput runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream,

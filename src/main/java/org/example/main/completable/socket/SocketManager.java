@@ -12,5 +12,6 @@ public interface SocketManager extends AutoCloseable {
     void close();
     CompletableFuture<FunctionOutput> calculateF(CalculationParameters params);
     CompletableFuture<FunctionOutput> calculateG(CalculationParameters params);
-
+    void cancelF();
+    void cancelG();
 }

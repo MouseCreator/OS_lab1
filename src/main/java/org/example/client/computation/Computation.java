@@ -48,5 +48,5 @@ public class Computation {
         try { Thread.currentThread().join(); } catch (InterruptedException ie) {}
         return Optional.of(Optional.empty());
     }
-    
+
 }
