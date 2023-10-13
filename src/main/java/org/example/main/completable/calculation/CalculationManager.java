@@ -20,23 +20,31 @@ public class CalculationManager {
         CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(parameters);
         return CompletableFuture.supplyAsync(()->{
             try {
-                FunctionOutput FOutput = futureF.get();
-                FunctionOutput GOutput = futureG.get();
-                if (FOutput.processStatus() == 0 && GOutput.processStatus() == 0) {
-                    int calculationResult = mathUtil.gcd(FOutput.value(), GOutput.value());
-                    memoizationMap.put(parameters.x(), calculationResult);
-                    return "Result: " + calculationResult;
-                } else {
-                    String result = "Computation failed:\nF status:";
-                    result += FOutput.details() + "\n";
-                    result += "G status\n";
-                    result += GOutput.details();
-                    return result;
-                }
+                String result = calculate(parameters, futureF, futureG);
+                System.out.println(result);
+                return result;
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private String calculate(CalculationParameters parameters,
+                             CompletableFuture<FunctionOutput> futureF,
+                             CompletableFuture<FunctionOutput> futureG) throws InterruptedException, ExecutionException {
+        FunctionOutput FOutput = futureF.get();
+        FunctionOutput GOutput = futureG.get();
+        if (FOutput.processStatus() == 0 && GOutput.processStatus() == 0) {
+            int calculationResult = mathUtil.gcd(FOutput.value(), GOutput.value());
+            memoizationMap.put(parameters.x(), calculationResult);
+            return "Result: " + calculationResult;
+        } else {
+            String result = "Computation failed:\nF status:";
+            result += FOutput.details();
+            result += "\nG status\n";
+            result += GOutput.details();
+            return result;
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package org.example.main.completable.controller;
 
+import org.example.main.completable.calculation.CalculationMain;
 import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.Signal;
 
@@ -9,6 +10,11 @@ public class Controller {
     private boolean closed = false;
     private final Scanner scanner = new Scanner(System.in);
     private long timeout = 5000L;
+    private final CalculationMain calculationMain;
+    public Controller(CalculationMain calculationMain) {
+        this.calculationMain = calculationMain;
+    }
+
     public void start() {
         printHelp();
         doMainLoop();
@@ -126,6 +132,11 @@ public class Controller {
     }
 
     private void printMap(String[] parameters) {
+        if (parameters.length == 0) {
+            //print all
+        } else {
+            //print selected
+        }
 
     }
 
@@ -133,15 +144,20 @@ public class Controller {
     }
 
     private void stopExecution() {
-
+        calculationMain.cancel();
     }
 
     private void calculateFunction(String[] parameters) {
-
-    }
-
-    private void calculateSingle(int x) {
-        CalculationParameters calculationParameters = new CalculationParameters(x, timeout, Signal.CONTINUE);
+        CalculationParameters[] calculationParametersArray = new CalculationParameters[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            int argument = Integer.parseInt(parameters[i]);
+            calculationParametersArray[i] = new CalculationParameters(argument, timeout, Signal.CONTINUE);
+        }
+        try {
+            calculationMain.calculate(calculationParametersArray);
+        } catch (IllegalStateException e) {
+            System.out.println("Other calculation is still in progress!");
+        }
     }
 
     private void printError(String message) {
@@ -149,7 +165,7 @@ public class Controller {
     }
 
     private void printStatus() {
-
+        System.out.println(calculationMain.status());
     }
 
 
