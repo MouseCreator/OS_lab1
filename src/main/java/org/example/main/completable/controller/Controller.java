@@ -1,6 +1,6 @@
 package org.example.main.completable.controller;
 
-import org.example.main.completable.basic.Reader;
+import org.example.util.Reader;
 import org.example.main.completable.calculation.CalculationMain;
 import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.Signal;

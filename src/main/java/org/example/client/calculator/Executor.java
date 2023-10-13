@@ -11,7 +11,7 @@ public class Executor {
         this.computation = computation;
     }
 
-    private int lightErrors = -1;
+    private int lightErrors = 0;
     public CompletableFuture<Optional<Optional<Integer>>> execute(int x) {
         return CompletableFuture.supplyAsync(() -> {
             Optional<Optional<Integer>> result = Optional.empty();

@@ -63,7 +63,7 @@ public class LongTermSocketManager implements SocketManager {
         try {
             provideData(outputStream, params);
             return receiveData(inputStream, params.x(), queue);
-        } catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

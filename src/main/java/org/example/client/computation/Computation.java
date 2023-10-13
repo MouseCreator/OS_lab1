@@ -33,6 +33,14 @@ public class Computation {
                 attempt = CASE1_ATTEMPTS;
                 return Optional.of(Optional.of(returnValue));
             }
+            case 2 -> {
+                try {
+                    TimeUnit.SECONDS.sleep(15);
+                    return Optional.of(Optional.of(8));
+                } catch (InterruptedException ie) {
+                    return Optional.of(Optional.empty());
+                }
+            }
             default -> {
             }
         }
@@ -40,8 +48,5 @@ public class Computation {
         try { Thread.currentThread().join(); } catch (InterruptedException ie) {}
         return Optional.of(Optional.empty());
     }
-
-    public int errorCount() {
-        return CASE1_ATTEMPTS - attempt;
-    }
+    
 }
