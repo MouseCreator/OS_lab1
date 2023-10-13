@@ -14,8 +14,7 @@ public class AtomCalculator {
 
     private final LongTermSocketManager socketManager;
     private final MathUtil mathUtil = new MathUtil();
-    private final MemoizationMap<Integer> memoizationMap = new MemoizationMap<>();
-
+    private final MemoizationMap<Integer, String> memoizationMap = new MemoizationMap<>();
     public AtomCalculator(LongTermSocketManager socketManager) {
         this.socketManager = socketManager;
     }

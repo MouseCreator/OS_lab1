@@ -81,7 +81,7 @@ public class LongTermCalculator implements CommonCalculator{
             return;
         }
         int fx = result.get().get();
-        clientSocketIO.sendData(name, x, Status.SUCCESS, fx, "Calculation success!");
+        clientSocketIO.sendData(name, x, Status.SUCCESS, fx, "Calculation success! Result: " + fx);
     }
 
 

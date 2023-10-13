@@ -14,7 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class LongTermSocketManager {
+public class LongTermSocketManager implements SocketManager {
     private ServerSocket serverSocket;
     private Socket FSocket;
     private Socket GSocket;
