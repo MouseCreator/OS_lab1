@@ -155,7 +155,10 @@ public class LongTermSocketManager implements SocketManager {
         lock.unlock();
         FunctionOutput result = (FunctionOutput) obj;
         System.out.println("rcv" + result);
-        queue.add(result);
+        synchronized (queue) {
+            queue.add(result);
+            queue.notifyAll();
+        }
         return getFunctionOutput(waitsFor, queue);
     }
 
