@@ -44,10 +44,9 @@ public class BasicController {
         int x = Integer.parseInt(Reader.read(">"));
         CompletableFuture<FunctionOutput> futureF = socketManager.calculateF(new CalculationParameters(x, 4000L, Signal.CONTINUE));
         CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(new CalculationParameters(x, 4000L, Signal.CONTINUE));
-
-        MathUtil mathUtil = new MathUtil();
         try {
-            mathUtil.gcd(futureF.get().value(), futureG.get().value());
+            MathUtil mathUtil = new MathUtil();
+            System.out.println(mathUtil.gcd(futureF.get().value(), futureG.get().value()));
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
