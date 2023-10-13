@@ -149,12 +149,10 @@ public class LongTermSocketManager implements SocketManager {
 
     private FunctionOutput receiveData(ObjectInputStream inputStream, int waitsFor,
                                        BlockingQueue<FunctionOutput> queue, Lock lock) throws IOException, ClassNotFoundException {
-        System.out.println("waits");
         lock.lock();
         Object obj = inputStream.readObject();
         lock.unlock();
         FunctionOutput result = (FunctionOutput) obj;
-        System.out.println("rcv" + result);
         synchronized (queue) {
             queue.add(result);
             queue.notifyAll();

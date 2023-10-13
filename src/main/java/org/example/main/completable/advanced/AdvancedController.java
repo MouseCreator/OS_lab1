@@ -21,8 +21,8 @@ public class AdvancedController {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
             Process processG = processCreator.startGProcess();
-            initListener(processG);
-            initListener(processF);
+            //initListener(processG);
+            //initListener(processF);
             startSocket(processF, processG);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -106,9 +106,9 @@ public class AdvancedController {
             FunctionOutput outputG = futureG.get();
 
             if (outputF.processStatus() == 0 && outputG.processStatus() == 0) {
-                System.out.println("Result: " + mathUtil.gcd(outputG.value(), outputF.value()));
+                System.out.println("Result(" + x + "): " + mathUtil.gcd(outputG.value(), outputF.value()));
             } else {
-                String s = "Error!";
+                String s = "Error! Cannot calculate function at " + x;
                 s += ("\nProcess F " + outputF.details());
                 s += ("\nProcess G " + outputG.details());
                 System.out.println(s);
