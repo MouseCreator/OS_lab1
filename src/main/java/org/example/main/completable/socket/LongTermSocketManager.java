@@ -93,21 +93,22 @@ public class LongTermSocketManager implements SocketManager {
 
     @Override
     public String statusF() {
-        return getStatus(inputStreamF, outputStreamF);
+        return getStatus(inputStreamF, outputStreamF, currentF, FLock);
     }
 
     @Override
     public String statusG() {
-        return getStatus(inputStreamG, outputStreamG);
+        return getStatus(inputStreamG, outputStreamG, currentG, GLock);
     }
 
-    private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream) {
+    private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream, BlockingQueue<FunctionOutput> queue, Lock lock) {
+        int signal = Signal.STATUS;
         try {
-            int signal = Signal.STATUS;
-            outputStream.writeObject(new FunctionInput(0, 1000L, signal));
+            outputStream.writeObject(new FunctionInput(-1, 1000L, signal));
             outputStream.flush();
-
+            lock.lock();
             Object obj = inputStream.readObject();
+            lock.unlock();
             FunctionOutput result = (FunctionOutput) obj;
             return result.details();
         } catch (IOException | ClassNotFoundException e) {
