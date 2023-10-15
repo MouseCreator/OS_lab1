@@ -1,4 +1,4 @@
-package org.example.main.completable.socket;
+package org.example.util;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

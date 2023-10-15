@@ -1,6 +1,6 @@
 package org.example.main.completable.socket;
 
-import org.example.main.completable.calculation.CalculationParameters;
+import org.example.main.completable.dto.CalculationParameters;
 import org.example.main.completable.dto.FunctionOutput;
 
 import java.util.concurrent.CompletableFuture;

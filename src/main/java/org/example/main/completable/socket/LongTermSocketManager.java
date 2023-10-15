@@ -1,10 +1,11 @@
 package org.example.main.completable.socket;
 
-import org.example.main.completable.calculation.CalculationParameters;
+import org.example.main.completable.dto.CalculationParameters;
 import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.FunctionOutput;
 import org.example.main.completable.dto.Signal;
 import org.example.main.completable.dto.Status;
+import org.example.util.SeparateLock;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

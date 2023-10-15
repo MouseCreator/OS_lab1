@@ -2,7 +2,7 @@ package org.example.client.socket;
 
 import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.FunctionOutput;
-import org.example.main.completable.socket.SeparateLock;
+import org.example.util.SeparateLock;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

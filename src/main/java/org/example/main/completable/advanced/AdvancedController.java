@@ -5,6 +5,7 @@ import org.example.main.completable.creator.ProcessCreatorImpl;
 import org.example.main.completable.socket.LongTermSocketManager;
 import org.example.main.completable.socket.SocketManager;
 import org.example.memoization.MemoizationMap;
+import org.example.util.Parser;
 import org.example.util.Reader;
 
 import java.io.BufferedReader;
@@ -30,8 +31,8 @@ public class AdvancedController {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
             Process processG = processCreator.startGProcess();
-            initListener(processG);
-            initListener(processF);
+            //initListener(processG);
+            //initListener(processF);
             startSocket(processF, processG);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -111,7 +112,7 @@ public class AdvancedController {
      */
     private String toCommand(String expression) {
         String[] s = expression.split("[\\s\\t]+", 2);
-        Optional<Integer> integer = toInteger(s[0]);
+        Optional<Integer> integer = Parser.toInteger(s[0]);
         if (integer.isPresent()) {
             return "f " + expression;
         } else {
@@ -153,7 +154,7 @@ public class AdvancedController {
             service.clearMap();
         } else {
             for (String p : params) {
-                Optional<Integer> x = toInteger(p);
+                Optional<Integer> x = Parser.toInteger(p);
                 if (x.isEmpty()) {
                     System.out.println(p + " is not an integer");
                     continue;
@@ -230,7 +231,7 @@ public class AdvancedController {
     }
     private void changeTimeout(String[] params) {
         assert params.length == 1;
-        Optional<Long> t = toLong(params[0]);
+        Optional<Long> t = Parser.toLong(params[0]);
         if (t.isEmpty()) {
             System.out.println(params[0] + " cannot be cast to a long value!");
             return;
@@ -260,7 +261,7 @@ public class AdvancedController {
             service.statusAll();
         } else {
             for (String p : params) {
-                Optional<Integer> x = toInteger(p);
+                Optional<Integer> x = Parser.toInteger(p);
                 if (x.isEmpty()) {
                     System.out.println(p + " is not an integer");
                     continue;
@@ -272,7 +273,7 @@ public class AdvancedController {
 
     private void calculateValue(String[] params) {
         for (String p : params) {
-            Optional<Integer> x = toInteger(p);
+            Optional<Integer> x = Parser.toInteger(p);
             if (x.isEmpty()) {
                 System.out.println(p + " is not an integer");
                 continue;
@@ -285,21 +286,6 @@ public class AdvancedController {
         return expression.trim().toLowerCase();
     }
 
-    private Optional<Integer> toInteger(String s) {
-        try {
-            int value = Integer.parseInt(s);
-            return Optional.of(value);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-    private Optional<Long> toLong(String s) {
-        try {
-            long value = Long.parseLong(s);
-            return Optional.of(value);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
+
 
 }

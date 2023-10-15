@@ -1,6 +1,6 @@
 package org.example.main.completable.basic;
 
-import org.example.main.completable.calculation.CalculationParameters;
+import org.example.main.completable.dto.CalculationParameters;
 import org.example.main.completable.creator.ProcessCreator;
 import org.example.main.completable.creator.ProcessCreatorImpl;
 import org.example.main.completable.dto.FunctionOutput;
@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Calculates only once
  * No commands like 'status' or 'cancel' expected
- * Implemented as the safest and simplest realisation
+ * The safest and simplest implementation
  */
 public class BasicController {
     public void start() {
