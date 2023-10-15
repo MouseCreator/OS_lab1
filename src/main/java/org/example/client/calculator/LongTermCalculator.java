@@ -6,6 +6,7 @@ import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.Signal;
 import org.example.main.completable.dto.Status;
 
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.*;
 
@@ -14,6 +15,7 @@ public class LongTermCalculator implements CommonCalculator{
     private final Computation computation;
     private ExecutorService pool;
     private final String name;
+    private final HashMap<Integer, Executor> executorHashMap = new HashMap<>();
     public LongTermCalculator(LongTermClientSocketIO clientSocketIO, Computation computation, String name) {
         this.clientSocketIO = clientSocketIO;
         this.computation = computation;
@@ -57,6 +59,7 @@ public class LongTermCalculator implements CommonCalculator{
         long timeout = input.timeout();
         Executor executor = new Executor(computation);
         try {
+            executorHashMap.put(x, executor);
             computeFunctionAt(x, timeout, executor);
         } catch (ExecutionException e) {
             clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
@@ -72,8 +75,14 @@ public class LongTermCalculator implements CommonCalculator{
     }
 
     private void getStatus() {
-        System.out.println("Status called");
-        clientSocketIO.sendData(name, 0, Status.STATUS, 0, "Status unknown");
+        StringBuilder builder = new StringBuilder();
+        for (Integer x : executorHashMap.keySet()) {
+            Executor executor = executorHashMap.get(x);
+            if (!executor.isCompleted()) {
+                builder.append(x).append(": ").append(executor.status()).append('\n');
+            }
+        }
+        clientSocketIO.sendData(name, -1, Status.STATUS, 0, builder.toString());
     }
 
     private void computeFunctionAt(int x, long timeout, Executor executor) throws InterruptedException, ExecutionException, TimeoutException {
