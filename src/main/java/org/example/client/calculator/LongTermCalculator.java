@@ -33,11 +33,13 @@ public class LongTermCalculator implements CommonCalculator{
                 case Signal.CONTINUE -> executeAsync(input);
                 case Signal.RESTART -> interruptAll();
                 case Signal.SHUTDOWN -> {stopExecution(); return;}
-                case Signal.STATUS -> getStatus();
+                case Signal.STATUS -> getStatus(x);
+                case Signal.STATUS_ALL -> getStatusAll();
             }
 
         }
     }
+
     private void initPool() {
         pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()-1);
     }
@@ -74,7 +76,7 @@ public class LongTermCalculator implements CommonCalculator{
         }
     }
 
-    private void getStatus() {
+    private void getStatusAll() {
         StringBuilder builder = new StringBuilder();
         for (Integer x : executorHashMap.keySet()) {
             Executor executor = executorHashMap.get(x);
@@ -82,7 +84,18 @@ public class LongTermCalculator implements CommonCalculator{
                 builder.append(x).append(": ").append(executor.status()).append('\n');
             }
         }
-        clientSocketIO.sendData(name, -1, Status.STATUS, 0, builder.toString());
+        clientSocketIO.sendData(name, -1, Status.STATUS_ALL, 0, builder.toString());
+    }
+
+    private void getStatus(int x) {
+        String status;
+        Executor executor = executorHashMap.get(x);
+        if (executor == null) {
+            status = "Value " + x + " was never calculated";
+        } else {
+            status = executor.status();
+        }
+        clientSocketIO.sendData(name, x, Status.STATUS, 0, status);
     }
 
     private void computeFunctionAt(int x, long timeout, Executor executor) throws InterruptedException, ExecutionException, TimeoutException {

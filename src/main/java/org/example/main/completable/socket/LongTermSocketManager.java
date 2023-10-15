@@ -103,12 +103,36 @@ public class LongTermSocketManager implements SocketManager {
         return getStatus(inputStreamG, outputStreamG, currentG, GLock);
     }
 
+
+
     private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream, BlockingQueue<FunctionOutput> queue, SeparateLock lock) {
-        int signal = Signal.STATUS;
+        int signal = Signal.STATUS_ALL;
         try {
             CalculationParameters calculationParameters = new CalculationParameters(-1, 1000L, signal);
             provideData(outputStream, calculationParameters, lock.read());
             return receiveData(inputStream, calculationParameters, queue, lock.write()).details();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String statusF(int x) {
+        return getStatusAt(x, inputStreamF, outputStreamF, currentF, FLock);
+    }
+
+    @Override
+    public String statusG(int x) {
+        return getStatusAt(x, inputStreamG, outputStreamG, currentG, GLock);
+    }
+    private String getStatusAt(int x,
+                               ObjectInputStream inputStream, ObjectOutputStream outputStream,
+                               BlockingQueue<FunctionOutput> queue, SeparateLock lock) {
+        int signal = Signal.STATUS_ALL;
+        CalculationParameters parameters = new CalculationParameters(x, 1L, signal);
+        try {
+            provideData(outputStream, parameters, lock.read());
+            return receiveData(inputStream, parameters, queue, lock.write()).details();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -219,7 +243,15 @@ public class LongTermSocketManager implements SocketManager {
      * @return true, if we can assume that output matches input
      */
     private boolean isWaitingFor(CalculationParameters params, FunctionOutput output) {
-        return params.signal() == Signal.STATUS && output.processStatus() == Status.STATUS || output.origin() == params.x();
+        if (params.signal() == Signal.STATUS_ALL && output.processStatus() == Status.STATUS_ALL)
+            return true;
+        if (params.signal() == Signal.STATUS && output.processStatus() == Status.STATUS) {
+            return output.origin() == params.x();
+        }
+        if (params.signal() == Signal.CONTINUE) {
+            return output.origin() == params.x();
+        }
+        throw new IllegalArgumentException("Invalid input signal in Waiting For cycle");
     }
 
 }

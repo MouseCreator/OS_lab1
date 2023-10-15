@@ -7,4 +7,5 @@ public class Status {
     public final static int INTERRUPT = 3;
     public final static int TIMEOUT = 4;
     public static final int STATUS = 5;
+    public static final int STATUS_ALL = 6;
 }
