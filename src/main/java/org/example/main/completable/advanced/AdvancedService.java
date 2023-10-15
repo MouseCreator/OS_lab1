@@ -3,24 +3,36 @@ package org.example.main.completable.advanced;
 import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.dto.FunctionOutput;
 import org.example.main.completable.dto.Signal;
+import org.example.main.completable.dto.Status;
 import org.example.main.completable.socket.SocketManager;
 import org.example.memoization.MemoizationMap;
 import org.example.util.MathUtil;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class AdvancedService {
-    private final MemoizationMap<Integer, Integer> memoizationMap;
+    private final MemoizationMap<Integer, String> memoizationMap;
 
     private final SocketManager socketManager;
 
-    public AdvancedService(SocketManager socketManager, MemoizationMap<Integer, Integer> memoizationMap) {
+    public AdvancedService(SocketManager socketManager, MemoizationMap<Integer, String> memoizationMap) {
         this.socketManager = socketManager;
         this.memoizationMap = memoizationMap;
     }
 
     public void calculate(int x, long timeout) {
+        if (memoizationMap.isComputed(x)) {
+            Optional<String> precalculated = memoizationMap.get(x);
+            assert precalculated.isPresent();
+            System.out.println("From memoization map\n" + precalculated.get());
+            return;
+        }
+        calculateNew(x, timeout);
+    }
+
+    public void calculateNew(int x, long timeout) {
         Thread calculatingThread = new Thread(() -> calculateAsync(x, timeout));
         calculatingThread.start();
     }
@@ -35,13 +47,20 @@ public class AdvancedService {
 
             if (outputF.processStatus() == 0 && outputG.processStatus() == 0) {
                 int result = mathUtil.gcd(outputG.value(), outputF.value());
-                memoizationMap.put(x,result);
-                System.out.println("Result(" + x + "): " + result);
+                String successString = String.format("Result(%d) = %d", x, result);
+                System.out.println(successString);
+                memoizationMap.put(x, successString);
             } else {
-                String s = "Error! Cannot calculate function at " + x;
-                s += ("\nProcess F " + outputF.details());
-                s += ("\nProcess G " + outputG.details());
-                System.out.println(s);
+                String errorString = String.format("Result(%d) = CRITICAL ERROR", x);
+                String detailedString = errorString + ". Caused by:";
+                if (outputF.processStatus() != Status.SUCCESS) {
+                    detailedString += ("\n\tProcess F " + outputF.details());
+                }
+                if (outputG.processStatus() != Status.SUCCESS) {
+                    detailedString += ("\n\tProcess G " + outputG.details());
+                }
+                memoizationMap.put(x, errorString);
+                System.out.println(detailedString);
             }
         } catch (InterruptedException e) {
             futureF.cancel(true);

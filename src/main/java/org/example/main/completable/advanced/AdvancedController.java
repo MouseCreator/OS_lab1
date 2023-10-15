@@ -68,7 +68,7 @@ public class AdvancedController {
     }
 
     private void initService(SocketManager socketManager) {
-        MemoizationMap<Integer, Integer> memoizationMap = new MemoizationMap<>();
+        MemoizationMap<Integer, String> memoizationMap = new MemoizationMap<>();
         service = new AdvancedService(socketManager, memoizationMap);
     }
 

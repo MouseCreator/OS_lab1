@@ -103,8 +103,6 @@ public class LongTermSocketManager implements SocketManager {
         return getStatus(inputStreamG, outputStreamG, currentG, GLock);
     }
 
-
-
     private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream, BlockingQueue<FunctionOutput> queue, SeparateLock lock) {
         int signal = Signal.STATUS_ALL;
         try {

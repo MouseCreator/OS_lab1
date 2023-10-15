@@ -6,8 +6,8 @@ public class AdvancedMain {
     TODO:
     1. Add locks controller --DONE
     2. Implement status handling --DONE
-    3. Fix critical error extra info
-    4. Fix memoization map
+    3. Fix critical error extra info --DONE
+    4. Fix memoization map --DONE
     5. Fix exits
     6. Fix console output -- use \r?
      */
