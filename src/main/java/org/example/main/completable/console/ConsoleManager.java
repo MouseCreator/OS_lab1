@@ -5,6 +5,9 @@ import org.example.util.Reader;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Manages console input and output
+ */
 public class ConsoleManager {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
