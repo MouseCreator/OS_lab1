@@ -45,22 +45,13 @@ public class AdvancedService {
             FunctionOutput outputF = futureF.get();
             FunctionOutput outputG = futureG.get();
 
-            if (outputF.processStatus() == 0 && outputG.processStatus() == 0) {
-                int result = mathUtil.gcd(outputG.value(), outputF.value());
-                String successString = String.format("Result(%d) = %d", x, result);
-                System.out.println(successString);
-                memoizationMap.put(x, successString);
-            } else {
-                String errorString = String.format("Result(%d) = CRITICAL ERROR", x);
-                String detailedString = errorString + ". Caused by:";
-                if (outputF.processStatus() != Status.SUCCESS) {
-                    detailedString += ("\n\tProcess F " + outputF.details());
-                }
-                if (outputG.processStatus() != Status.SUCCESS) {
-                    detailedString += ("\n\tProcess G " + outputG.details());
-                }
-                memoizationMap.put(x, errorString);
-                System.out.println(detailedString);
+            if (outputF.processStatus() == Status.SUCCESS && outputG.processStatus() == Status.SUCCESS) {
+                printSuccess(x, mathUtil, outputF, outputG);
+            } else if  (outputF.processStatus() == Status.INTERRUPT || outputG.processStatus() == Status.INTERRUPT) {
+                printInterrupt(x);
+            }
+            else {
+                printError(x, outputF, outputG);
             }
         } catch (InterruptedException e) {
             futureF.cancel(true);
@@ -70,6 +61,31 @@ public class AdvancedService {
             System.out.println("Execution error!");
             e.printStackTrace();
         }
+    }
+
+    private void printError(int x, FunctionOutput outputF, FunctionOutput outputG) {
+        String errorString = String.format("Result(%d) = CRITICAL ERROR", x);
+        String detailedString = errorString + ". Caused by:";
+        if (outputF.processStatus() != Status.SUCCESS) {
+            detailedString += ("\n\tProcess F " + outputF.details());
+        }
+        if (outputG.processStatus() != Status.SUCCESS) {
+            detailedString += ("\n\tProcess G " + outputG.details());
+        }
+        memoizationMap.put(x, errorString);
+        System.out.println(detailedString);
+    }
+
+    private static void printInterrupt(int x) {
+        String interruptString = String.format("Result(%d) = CALCULATION INTERRUPTED", x);
+        System.out.println(interruptString);
+    }
+
+    private void printSuccess(int x, MathUtil mathUtil, FunctionOutput outputF, FunctionOutput outputG) {
+        int result = mathUtil.gcd(outputG.value(), outputF.value());
+        String successString = String.format("Result(%d) = %d", x, result);
+        System.out.println(successString);
+        memoizationMap.put(x, successString);
     }
 
     public void close() {
