@@ -2,13 +2,12 @@ package org.example.client.socket;
 
 import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.FunctionOutput;
+import org.example.main.completable.socket.SeparateLock;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class LongTermClientSocketManager implements LongTermClientSocketIO {
     private final static String address = "127.0.0.1";
@@ -36,17 +35,16 @@ public class LongTermClientSocketManager implements LongTermClientSocketIO {
         }
     }
 
-    private final Lock lockRead = new ReentrantLock();
-    private final Lock lockWrite = new ReentrantLock();
+    private final SeparateLock lock = new SeparateLock();
 
     public FunctionInput receiveData() {
         try {
-            lockRead.lock();
+            lock.read().lock();
             return (FunctionInput) inputStream.readObject();
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            lockRead.unlock();
+            lock.read().unlock();
         }
     }
 
@@ -55,14 +53,14 @@ public class LongTermClientSocketManager implements LongTermClientSocketIO {
         try {
             System.out.println("Before");
             FunctionOutput response = new FunctionOutput(name, origin, status, result, details);
-            lockWrite.lock();
+            lock.write().lock();
             System.out.println(response);
             outputStream.writeObject(response);
             System.out.println("After");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            lockWrite.unlock();
+            lock.write().unlock();
         }
     }
 }
