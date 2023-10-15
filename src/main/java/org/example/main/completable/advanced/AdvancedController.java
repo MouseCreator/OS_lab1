@@ -208,14 +208,14 @@ public class AdvancedController {
                     f 0 =>  calculate f(0)
                     f 0 1 => calculate f(0) and f(1) asynchronously
                     f =>    error, invalid number of parameters
-                status (s) [integer...] - get calculation status at the moment
+                status (s) [integer...] - get calculation status
                     Examples:
-                    s =>    print statuses af all current calculations
+                    s   =>  print statuses af all current calculations
                     s 0 =>  print status of calculation with argument 0
                             if it was calculated earlier, the time it was finished will be printed
-                            if it was never calculated, command will print "Never calculated"
+                            if it was never calculated, program will print "Never calculated"
                 exit (e) - exit the program
-                cancel (c) - cancel all on-going calculations
+                cancel (c) - cancel all calculations
                 timeout (t) [integer] - change timeout, default value is 4000 ms
                 delete (d) [integer...] - delete values from memoization map
                     Examples:
