@@ -31,7 +31,7 @@ public class Executor {
                     resultDetails.complete(result.get().get());
                 }
             } finally {
-                innerLock.readLock().unlock();
+                innerLock.writeLock().unlock();
             }
             return result;
         });

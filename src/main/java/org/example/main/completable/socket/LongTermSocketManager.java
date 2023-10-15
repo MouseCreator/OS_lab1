@@ -197,8 +197,9 @@ public class LongTermSocketManager implements SocketManager {
                     }
                 } else {
                     synchronized (outputQueue) {
+                        outputQueue.wait();
                         if (outputQueue.isEmpty()) {
-                            outputQueue.wait();
+                            continue;
                         }
                         if (isWaitingFor(parameters, outputQueue.peek())) {
                             return outputQueue.poll();
@@ -218,7 +219,7 @@ public class LongTermSocketManager implements SocketManager {
      * @return true, if we can assume that output matches input
      */
     private boolean isWaitingFor(CalculationParameters params, FunctionOutput output) {
-        return params.signal() == Signal.STATUS && output.processStatus() == Status.STATUS || output.value() == params.x();
+        return params.signal() == Signal.STATUS && output.processStatus() == Status.STATUS || output.origin() == params.x();
     }
 
 }
