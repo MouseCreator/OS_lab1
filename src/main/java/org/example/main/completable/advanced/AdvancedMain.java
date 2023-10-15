@@ -4,7 +4,7 @@ public class AdvancedMain {
 
     /*
     TODO:
-    1. Add locks controller
+    1. Add locks controller --DONE
     2. Implement status handling
     3. Fix critical error extra info
     4. Fix memoization map

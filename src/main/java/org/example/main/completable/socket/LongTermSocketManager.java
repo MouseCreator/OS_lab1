@@ -182,15 +182,18 @@ public class LongTermSocketManager implements SocketManager {
         try {
             while (true) {
                 if (lock.tryLock()) {
-                    Object obj = inputStream.readObject();
-                    lock.unlock();
-                    FunctionOutput receivedOutput = (FunctionOutput) obj;
-                    if (isWaitingFor(parameters, receivedOutput)) {
-                        return receivedOutput;
-                    }
-                    synchronized (outputQueue) {
-                        outputQueue.add(receivedOutput);
-                        outputQueue.notifyAll();
+                    try {
+                        Object obj = inputStream.readObject();
+                        FunctionOutput receivedOutput = (FunctionOutput) obj;
+                        if (isWaitingFor(parameters, receivedOutput)) {
+                            return receivedOutput;
+                        }
+                        synchronized (outputQueue) {
+                            outputQueue.add(receivedOutput);
+                            outputQueue.notifyAll();
+                        }
+                    } finally {
+                        lock.unlock();
                     }
                 } else {
                     synchronized (outputQueue) {
@@ -204,9 +207,7 @@ public class LongTermSocketManager implements SocketManager {
                 }
             }
         } catch (IOException | ClassNotFoundException | InterruptedException e) {
-            return new FunctionOutput("Main", parameters.x(), Status.INTERRUPT, 0, "Calculation was interrupted");
-        } finally {
-            lock.unlock();
+            return new FunctionOutput("Main", parameters.x(), Status.INTERRUPT, 0, "Result manager error!");
         }
     }
 
