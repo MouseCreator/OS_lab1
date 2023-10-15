@@ -1,26 +1,22 @@
 package org.example.main.completable.advanced;
 
-import org.example.main.completable.calculation.CalculationParameters;
 import org.example.main.completable.creator.ProcessCreator;
 import org.example.main.completable.creator.ProcessCreatorImpl;
-import org.example.main.completable.dto.FunctionOutput;
-import org.example.main.completable.dto.Signal;
 import org.example.main.completable.socket.LongTermSocketManager;
 import org.example.main.completable.socket.SocketManager;
 import org.example.memoization.MemoizationMap;
-import org.example.util.MathUtil;
 import org.example.util.Reader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class AdvancedController {
 
-    private final MemoizationMap<Integer, Integer> memoizationMap = new MemoizationMap<>();
+    private AdvancedService service;
+    private long timeout = 4000L;
+    private boolean running = true;
     public void start() {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
@@ -53,7 +49,8 @@ public class AdvancedController {
         try(SocketManager socketManager = new LongTermSocketManager()) {
             socketManager.start();
             socketManager.accept();
-            calculate(socketManager);
+            initService(socketManager);
+            doCalculateCycle();
             p1.waitFor();
             p2.waitFor();
         } catch (Exception e) {
@@ -61,71 +58,136 @@ public class AdvancedController {
         }
     }
 
-    private void calculate(SocketManager socketManager) {
-        while (true) {
+    private void initService(SocketManager socketManager) {
+        MemoizationMap<Integer, Integer> memoizationMap = new MemoizationMap<>();
+        service = new AdvancedService(socketManager, memoizationMap);
+    }
+    private void doCalculateCycle() {
+        while (running) {
             String input = Reader.readString("> ");
-            int x;
-            try {
-                x = Integer.parseInt(input);
-                if (memoizationMap.isComputed(x)) {
-                    Optional<Integer> result = memoizationMap.get(x);
-                    assert result.isPresent();
-                    System.out.println("From memoization map: F(" + x + ") = " + result.get());
-                    return;
-                }
-                Thread calculatingThread = new Thread(() -> calculateAsync(socketManager, x));
-                calculatingThread.start();
-            } catch (Exception e) {
-                switch (input) {
-                    case "close", "c" -> {
-                        socketManager.shutdownF();
-                        socketManager.shutdownG();
-                        return;
-                    }
-                    case "cancel", "d" -> {
-                        socketManager.cancelF();
-                        socketManager.cancelG();
-                    }
-                    case "status", "s" -> {
-                        String status1 = socketManager.statusF();
-                        String status2 = socketManager.statusG();
-                        System.out.println(status1 + "\n" + status2);
-                    }
-                    default -> {
-                        System.out.println("Unknown command");
-                        continue;
-                    }
-                }
-            }
-
+            execute(input);
         }
     }
 
-    private void calculateAsync(SocketManager socketManager, int x) {
-        CompletableFuture<FunctionOutput> futureF = socketManager.calculateF(new CalculationParameters(x, 4000L, Signal.CONTINUE));
-        CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(new CalculationParameters(x, 4000L, Signal.CONTINUE));
+    private void execute(String expression) {
+        String formatted = toStandardForm(expression);
+        String[] s = formatted.split("[\\s\\t]+", 2);
+        String command;
+        String[] params;
+        if (s.length == 1) {
+            command = s[0];
+            params = new String[0];
+        } else {
+            command = s[0];
+            params = s[1].split("[\\s\\t]+");
+        }
+        if(validate(command, params)) {
+            response(command, params);
+        } else {
+            System.out.println("Command " + command + " does not take given number of parameters");
+        }
+    }
+
+    private void response(String command, String[] params) {
+        switch (command) {
+            case "func", "f" -> calculateValue(params);
+            case "status", "s" -> status(params);
+            case "exit", "e" -> close();
+            case "cancel", "c" -> service.cancel();
+            case "timeout", "t" -> changeTimeout(params);
+            case "help", "h" -> help();
+            default -> handleUnknown(command);
+        }
+    }
+
+    private boolean validate(String command, String[] parameters) {
+        final int ANY = -2;
+        final int AT_LEAST_ONE = -1;
+        int expected = switch (command) {
+            case "func", "f" -> AT_LEAST_ONE;
+            case "status", "s" -> ANY;
+            case "exit", "e" -> 0;
+            case "cancel", "c" -> 0;
+            case "help", "h" -> 0;
+            case "timeout", "t" -> 1;
+            default -> ANY;
+        };
+        if (expected == ANY) {
+            return true;
+        }
+        if (expected == AT_LEAST_ONE) {
+            return parameters.length > 0;
+        }
+        return parameters.length == expected;
+    }
+
+    private void changeTimeout(String[] params) {
+        assert params.length == 1;
+        Optional<Long> t = toLong(params[0]);
+        if (t.isEmpty()) {
+            return;
+        }
+        timeout = t.get();
+    }
+
+    private void close() {
+        service.close();
+        running = false;
+    }
+
+    private void help() {
+        System.out.println("HELP");
+    }
+
+    private void handleUnknown(String command) {
+        System.out.println("Unknown function:" + command);
+    }
+
+    private void status(String[] params) {
+        if (params.length == 0) {
+            service.statusAll();
+        } else {
+            for (String p : params) {
+                Optional<Integer> x = toInteger(p);
+                if (x.isEmpty()) {
+                    continue;
+                }
+                service.status(x.get());
+            }
+        }
+    }
+
+    private void calculateValue(String[] params) {
+        for (String p : params) {
+            Optional<Integer> x = toInteger(p);
+            if (x.isEmpty()) {
+                continue;
+            }
+            service.calculate(x.get(), timeout);
+        }
+    }
+
+    private Optional<Integer> toInteger(String s) {
         try {
-            MathUtil mathUtil = new MathUtil();
-            FunctionOutput outputF = futureF.get();
-            FunctionOutput outputG = futureG.get();
-
-            if (outputF.processStatus() == 0 && outputG.processStatus() == 0) {
-                int result = mathUtil.gcd(outputG.value(), outputF.value());
-                memoizationMap.put(x,result);
-                System.out.println("Result(" + x + "): " + result);
-            } else {
-                String s = "Error! Cannot calculate function at " + x;
-                s += ("\nProcess F " + outputF.details());
-                s += ("\nProcess G " + outputG.details());
-                System.out.println(s);
-            }
-        } catch (InterruptedException e) {
-            futureF.cancel(true);
-            futureG.cancel(true);
-            System.out.println("Calculation is interrupted!");
-        } catch (ExecutionException e) {
-            System.out.println("Execution error!");
-            e.printStackTrace();
+            int value = Integer.parseInt(s);
+            return Optional.of(value);
+        } catch (Exception e) {
+            System.out.println(s + " is not an integer!");
+            return Optional.empty();
         }
     }
+    private Optional<Long> toLong(String s) {
+        try {
+            long value = Long.parseLong(s);
+            return Optional.of(value);
+        } catch (Exception e) {
+            System.out.println(s + " is not an integer!");
+            return Optional.empty();
+        }
+    }
+
+    private String toStandardForm(String expression) {
+        return expression.trim().toLowerCase();
+    }
+
 }

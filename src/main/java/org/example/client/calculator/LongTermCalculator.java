@@ -91,7 +91,7 @@ public class LongTermCalculator implements CommonCalculator{
         String status;
         Executor executor = executorHashMap.get(x);
         if (executor == null) {
-            status = "Value " + x + " was never calculated";
+            status = "Function at " + x + " was never calculated";
         } else {
             status = executor.status();
         }
