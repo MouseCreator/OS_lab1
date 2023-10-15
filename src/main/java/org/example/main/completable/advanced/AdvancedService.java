@@ -109,4 +109,12 @@ public class AdvancedService {
         String status2 = socketManager.statusG(x);
         System.out.println(status1 + "\n" + status2);
     }
+
+    public void clearMap() {
+        memoizationMap.clear();
+    }
+
+    public void clear(int at) {
+        memoizationMap.remove(at);
+    }
 }

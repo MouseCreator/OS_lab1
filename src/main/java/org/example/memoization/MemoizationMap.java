@@ -20,4 +20,11 @@ public class MemoizationMap<V, R> {
     }
 
 
+    public synchronized void clear() {
+        processMemoizationMap.clear();
+    }
+
+    public void remove(V at) {
+        processMemoizationMap.remove(at);
+    }
 }

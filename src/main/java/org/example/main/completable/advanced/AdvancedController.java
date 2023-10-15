@@ -143,7 +143,23 @@ public class AdvancedController {
             case "cancel", "c" -> service.cancel();
             case "timeout", "t" -> changeTimeout(params);
             case "help", "h" -> help();
+            case "delete", "d" -> deleteFromMap(params);
             default -> handleUnknown(command);
+        }
+    }
+
+    private void deleteFromMap(String[] params) {
+        if (params.length == 0) {
+            service.clearMap();
+        } else {
+            for (String p : params) {
+                Optional<Integer> x = toInteger(p);
+                if (x.isEmpty()) {
+                    System.out.println(p + " is not an integer");
+                    continue;
+                }
+                service.clear(x.get());
+            }
         }
     }
 
@@ -163,6 +179,7 @@ public class AdvancedController {
             case "cancel", "c" -> 0;
             case "help", "h" -> 0;
             case "timeout", "t" -> 1;
+            case "delete", "d" -> 1;
             default -> ANY;
         };
         if (expected == ANY) {
@@ -174,6 +191,43 @@ public class AdvancedController {
         return parameters.length == expected;
     }
 
+    /**
+     * Prints information about commands and parameters
+     */
+    private void help() {
+        String helpString = """
+                <==HELP==>
+                Expected input format is: command param1 param2 ...
+                Functions are not case-sensitive
+                Extra spaces and tabulations will be ignored
+                
+                Available commands:
+                help (shortcut: h) - print help information
+                func (f) [integer...] - calculate function at given arguments
+                    Examples:
+                    f 0 =>  calculate f(0)
+                    f 0 1 => calculate f(0) and f(1) asynchronously
+                    f =>    error, invalid number of parameters
+                status (s) [integer...] - get calculation status at the moment
+                    Examples:
+                    s =>    print statuses af all current calculations
+                    s 0 =>  print status of calculation with argument 0
+                            if it was calculated earlier, the time it was finished will be printed
+                            if it was never calculated, command will print "Never calculated"
+                exit (e) - exit the program
+                cancel (c) - cancel all on-going calculations
+                timeout (t) [integer] - change timeout, default value is 4000 ms
+                delete (d) [integer...] - delete values from memoization map
+                    Examples:
+                    d 0 => deletes f(0) if present
+                    d => clears memoization map
+                
+                If input starts with a decimal number, it will be transformed to "f [input]"
+                    Example: 0 1 => calculate f(0) and f(1)
+                    
+                """;
+        System.out.println(helpString);
+    }
     private void changeTimeout(String[] params) {
         assert params.length == 1;
         Optional<Long> t = toLong(params[0]);
@@ -181,17 +235,20 @@ public class AdvancedController {
             System.out.println(params[0] + " cannot be cast to a long value!");
             return;
         }
-        timeout = t.get();
-        System.out.println("Successfully changed timeout to " + timeout + "ms");
+        long nt = t.get();
+        if (nt > 0) {
+            timeout = nt;
+            System.out.println("Successfully changed timeout to " + timeout + "ms");
+        }
+        else {
+            System.out.println("Timeout cannot be a negative value");
+        }
+
     }
 
     private void close() {
         service.close();
         running = false;
-    }
-
-    private void help() {
-        System.out.println("HELP");
     }
 
     private void handleUnknown(String command) {
