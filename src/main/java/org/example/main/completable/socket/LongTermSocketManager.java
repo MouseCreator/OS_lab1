@@ -15,12 +15,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class LongTermSocketManager implements SocketManager {
     private ServerSocket serverSocket;
     private Socket FSocket;
     private Socket GSocket;
+
+    private final SeparateLock FLock = new SeparateLock();
+    private final SeparateLock GLock = new SeparateLock();
     private ObjectOutputStream outputStreamF;
     private ObjectInputStream inputStreamF;
     private ObjectOutputStream outputStreamG;
@@ -101,17 +103,13 @@ public class LongTermSocketManager implements SocketManager {
         return getStatus(inputStreamG, outputStreamG, currentG, GLock);
     }
 
-    private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream, BlockingQueue<FunctionOutput> queue, Lock lock) {
+    private String getStatus(ObjectInputStream inputStream, ObjectOutputStream outputStream, BlockingQueue<FunctionOutput> queue, SeparateLock lock) {
         int signal = Signal.STATUS;
         try {
-            outputStream.writeObject(new FunctionInput(-1, 1000L, signal));
-            outputStream.flush();
-            lock.lock();
-            Object obj = inputStream.readObject();
-            lock.unlock();
-            FunctionOutput result = (FunctionOutput) obj;
-            return result.details();
-        } catch (IOException | ClassNotFoundException e) {
+            CalculationParameters calculationParameters = new CalculationParameters(-1, 1000L, signal);
+            provideData(outputStream, calculationParameters, lock.read());
+            return receiveData(inputStream, calculationParameters, queue, lock.write()).details();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -127,55 +125,37 @@ public class LongTermSocketManager implements SocketManager {
     }
 
     private FunctionOutput runFuture(ObjectInputStream inputStream, ObjectOutputStream outputStream,
-                                     CalculationParameters params, BlockingQueue<FunctionOutput> queue, Lock lock) {
+                                     CalculationParameters params, BlockingQueue<FunctionOutput> queue, SeparateLock lock) {
         try {
-            provideData(outputStream, params, lock);
-            return receiveData(inputStream, params.x(), queue, lock);
-        } catch (IOException | ClassNotFoundException e) {
+            provideData(outputStream, params, lock.read());
+            return receiveData(inputStream, params, queue, lock.write());
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    private final Lock FLock = new ReentrantLock();
-    private final Lock GLock = new ReentrantLock();
 
     private void provideData(ObjectOutputStream outputStream, CalculationParameters params, Lock lock)
             throws IOException {
         int x = params.x();
         long timeout = params.timeout();
         int signal = params.signal();
-        outputStream.writeObject(new FunctionInput(x, timeout, signal));
-        outputStream.flush();
+        try {
+            lock.lock();
+            outputStream.writeObject(new FunctionInput(x, timeout, signal));
+            outputStream.flush();
+        } finally {
+            lock.unlock();
+        }
+
     }
 
-    private FunctionOutput receiveData(ObjectInputStream inputStream, int waitsFor,
-                                       BlockingQueue<FunctionOutput> queue, Lock lock) throws IOException, ClassNotFoundException {
-        lock.lock();
-        Object obj = inputStream.readObject();
-        lock.unlock();
-        FunctionOutput result = (FunctionOutput) obj;
-        synchronized (queue) {
-            queue.add(result);
-            queue.notifyAll();
-        }
-        return getFunctionOutput(waitsFor, queue);
+    private FunctionOutput receiveData(ObjectInputStream inputStream, CalculationParameters parameters,
+                                       BlockingQueue<FunctionOutput> queue, Lock lock) {
+        return awaitResult(inputStream, parameters, lock, queue);
     }
 
     private final BlockingQueue<FunctionOutput> currentF = new LinkedBlockingQueue<>();
     private final BlockingQueue<FunctionOutput> currentG = new LinkedBlockingQueue<>();
-
-    private FunctionOutput getFunctionOutput(int waitsFor, final BlockingQueue<FunctionOutput> outputQueue) {
-        synchronized (outputQueue) {
-            while (outputQueue.isEmpty() || outputQueue.peek().origin() != waitsFor) {
-                try {
-                    outputQueue.wait();
-                } catch (InterruptedException e) {
-                    return new FunctionOutput("Main", waitsFor, Status.INTERRUPT, 0, "Calculation was interrupted");
-                }
-            }
-            return outputQueue.poll();
-        }
-    }
 
     public void close() {
         if (serverSocket != null) {
@@ -197,6 +177,47 @@ public class LongTermSocketManager implements SocketManager {
                 throw new RuntimeException(e);
             }
         }
+    }
+    private FunctionOutput awaitResult(ObjectInputStream inputStream, CalculationParameters parameters, Lock lock, BlockingQueue<FunctionOutput> outputQueue) {
+        try {
+            while (true) {
+                if (lock.tryLock()) {
+                    Object obj = inputStream.readObject();
+                    lock.unlock();
+                    FunctionOutput receivedOutput = (FunctionOutput) obj;
+                    if (isWaitingFor(parameters, receivedOutput)) {
+                        return receivedOutput;
+                    }
+                    synchronized (outputQueue) {
+                        outputQueue.add(receivedOutput);
+                        outputQueue.notifyAll();
+                    }
+                } else {
+                    synchronized (outputQueue) {
+                        if (outputQueue.isEmpty()) {
+                            outputQueue.wait();
+                        }
+                        if (isWaitingFor(parameters, outputQueue.peek())) {
+                            return outputQueue.poll();
+                        }
+                    }
+                }
+            }
+        } catch (IOException | ClassNotFoundException | InterruptedException e) {
+            return new FunctionOutput("Main", parameters.x(), Status.INTERRUPT, 0, "Calculation was interrupted");
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     *
+     * @param params - function input
+     * @param output - return value of the calculation
+     * @return true, if we can assume that output matches input
+     */
+    private boolean isWaitingFor(CalculationParameters params, FunctionOutput output) {
+        return params.signal() == Signal.STATUS && output.processStatus() == Status.STATUS || output.value() == params.x();
     }
 
 }
