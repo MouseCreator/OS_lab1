@@ -12,9 +12,12 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Class that manages calculations and initiates communications via socket manager
+ * @see SocketManager
+ */
 public class AdvancedService {
     private final MemoizationMap<Integer, String> memoizationMap;
-
     private final SocketManager socketManager;
 
     public AdvancedService(SocketManager socketManager, MemoizationMap<Integer, String> memoizationMap) {

@@ -23,11 +23,13 @@ public class LongTermCalculator implements CommonCalculator{
         initPool();
     }
 
+    /**
+     * Main client (F or G) loop
+     */
     public void calculate() {
         while (!Thread.interrupted()) {
             FunctionInput input = clientSocketIO.receiveData();
             int x = input.value();
-            System.out.println(name + " received " + x);
             int signal = input.signal();
             switch (signal) {
                 case Signal.CONTINUE -> executeAsync(input);
@@ -40,22 +42,38 @@ public class LongTermCalculator implements CommonCalculator{
         }
     }
 
+    /**
+     * Creates new thread pool
+     */
     private void initPool() {
         pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()-1);
     }
+
+    /**
+     * cancels all calculations
+     */
     private void interruptAll() {
         pool.shutdownNow();
         initPool();
     }
+
+    /**
+     * Closes the thread pool
+     */
     private void stopExecution() {
         pool.shutdownNow();
         pool.close();
     }
 
+    /**
+     * Calculates function at {@param input} in thread pool and sends result to server
+     */
     private void executeAsync(FunctionInput input) {
         pool.submit(() -> executeComputation(input));
     }
-
+    /**
+     * Calculates function at {@param input} and sends result to server
+     */
     private void executeComputation(FunctionInput input) {
         int x = input.value();
         long timeout = input.timeout();
@@ -64,7 +82,7 @@ public class LongTermCalculator implements CommonCalculator{
             executorHashMap.put(x, executor);
             computeFunctionAt(x, timeout, executor);
         } catch (ExecutionException e) {
-            clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
+            clientSocketIO.sendData(name, x, Status.CRITICAL_ERROR, 0,
                     "Calculation finished with execution error");
         } catch (TimeoutException e) {
             clientSocketIO.sendData(name, x, Status.TIMEOUT, 0,
@@ -76,6 +94,9 @@ public class LongTermCalculator implements CommonCalculator{
         }
     }
 
+    /**
+     * Sends statuses of all calculations to server
+     */
     private void getStatusAll() {
         StringBuilder builder = new StringBuilder();
         for (Integer x : executorHashMap.keySet()) {
@@ -87,6 +108,10 @@ public class LongTermCalculator implements CommonCalculator{
         clientSocketIO.sendData(name, -1, Status.STATUS_ALL, 0, builder.toString());
     }
 
+    /**
+     *
+     * Sends statuses of {@param x} calculation to server
+     */
     private void getStatus(int x) {
         String status;
         Executor executor = executorHashMap.get(x);
@@ -98,18 +123,25 @@ public class LongTermCalculator implements CommonCalculator{
         clientSocketIO.sendData(name, x, Status.STATUS, 0, status);
     }
 
+    /**
+     * Computes function with executor
+     * @param x - input argument
+     * @param timeout - calculation timeout
+     * @param executor - executor
+     * @throws InterruptedException - if was interrupted
+     * @throws ExecutionException - if function was computed exceptionally
+     * @throws TimeoutException - if calculation timeout
+     */
     private void computeFunctionAt(int x, long timeout, Executor executor) throws InterruptedException, ExecutionException, TimeoutException {
         Optional<Optional<Integer>> result = executor.execute(x).get(timeout, TimeUnit.MILLISECONDS);
-        System.out.println("Result " + result);
         if (result.isEmpty()) {
             clientSocketIO.sendData(name, x, Status.LIGHT_ERROR_LIMIT, 0,
                     "Calculation finished with light error. Attempts:"  + executor.getLightErrors());
             return;
         }
         if (result.get().isEmpty()) {
-            clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
+            clientSocketIO.sendData(name, x, Status.CRITICAL_ERROR, 0,
                     "Calculation finished with critical error. Attempts: " + executor.getLightErrors());
-            System.out.println("Fatal error " + x);
             return;
         }
         int fx = result.get().get();

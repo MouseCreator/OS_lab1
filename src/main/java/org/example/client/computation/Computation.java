@@ -3,6 +3,10 @@ package org.example.client.computation;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Computation class
+ * Extended version of the one provided in lab repository
+ */
 public class Computation {
     private final int CASE1_ATTEMPTS = 3;
     private int attempt = CASE1_ATTEMPTS;

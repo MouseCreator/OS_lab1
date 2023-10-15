@@ -6,6 +6,10 @@ public class ProcessCreatorImpl implements ProcessCreator {
 
     private Process processF;
     private Process processG;
+    /**
+     * Builds and starts process F
+     * @return process F
+     */
     @Override
     public Process startFProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar/OS_lab1.jar");
@@ -18,6 +22,10 @@ public class ProcessCreatorImpl implements ProcessCreator {
         }
     }
 
+    /**
+     * Builds and starts process G
+     * @return process G
+     */
     @Override
     public Process startGProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", "out/artifacts/OS_lab1_jar2/OS_lab1.jar");
@@ -30,6 +38,10 @@ public class ProcessCreatorImpl implements ProcessCreator {
         }
     }
 
+    /**
+     * Destroys process F and G
+     * @throws Exception if exception in close occurs
+     */
     @Override
     public void close() throws Exception {
         if (processF != null) {

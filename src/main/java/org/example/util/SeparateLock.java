@@ -11,9 +11,18 @@ public class SeparateLock {
     private final Lock read = new ReentrantLock();
     private final Lock write = new ReentrantLock();
 
+    /**
+     *
+     * @return lock for output stream
+     */
     public Lock read() {
         return read;
     }
+
+    /**
+     *
+     * @return lock for input stream
+     */
 
     public Lock write() {
         return write;

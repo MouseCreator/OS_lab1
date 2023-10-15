@@ -2,8 +2,17 @@ package org.example.util;
 
 import java.util.Scanner;
 
+/**
+ * Reader utility
+ */
 public class Reader {
     private static final Scanner scanner = new Scanner(System.in);
+
+    /**
+     * Reads string from user
+     * @param prompt - prompt value
+     * @return user input
+     */
     public static String readString(String prompt) {
         String inputLine;
         do {
@@ -12,7 +21,11 @@ public class Reader {
         } while (inputLine == null || inputLine.isEmpty());
         return inputLine;
     }
-
+    /**
+     * Reads integer from user
+     * @param prompt - prompt value
+     * @return user input
+     */
     public static Integer readInteger(String prompt) {
         String inputLine;
         while (true){

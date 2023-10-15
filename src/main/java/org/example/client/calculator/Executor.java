@@ -7,6 +7,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Class to manage function execution
+ */
 public class Executor {
     private final ResultDetails resultDetails = new ResultDetails();
     private final Computation computation;
@@ -15,6 +18,11 @@ public class Executor {
         this.computation = computation;
     }
     private int lightErrors = 0;
+
+    /**
+     * @param x - input argument
+     * @return function value at {@param x}
+     */
     public CompletableFuture<Optional<Optional<Integer>>> execute(int x) {
         return CompletableFuture.supplyAsync(() -> {
             resultDetails.start();
@@ -37,10 +45,18 @@ public class Executor {
         });
     }
 
+    /**
+     *
+     * @return number of light errors
+     */
     public int getLightErrors() {
         return lightErrors;
     }
 
+    /**
+     *
+     * @return string representation of calculation status
+     */
     public String status() {
         innerLock.readLock().lock();
         try {
@@ -56,6 +72,9 @@ public class Executor {
         }
     }
 
+    /**
+     * @return true if calculation is done
+     */
     public boolean isCompleted() {
         try {
             innerLock.readLock().lock();

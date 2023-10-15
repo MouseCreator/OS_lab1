@@ -2,6 +2,9 @@ package org.example.client.calculator;
 
 import java.time.LocalDateTime;
 
+/**
+ * Contains result of executor calculation
+ */
 public class ResultDetails {
     private int result;
     private boolean completedExceptionally;
@@ -21,18 +24,32 @@ public class ResultDetails {
         return timeStartedMillis;
     }
 
+    /**
+     * @return calculation result f(x)
+     */
     public int getResult() {
         return result;
     }
 
+    /**
+     * @param result - result of calculation f(x)
+     */
     public void setResult(int result) {
         this.result = result;
     }
 
+    /**
+     *
+     * @return true if calculation is done
+     */
     public boolean hasResult() {
         return hasResult;
     }
 
+    /**
+     *
+     * @return calculation status
+     */
     public String getDetails() {
         if (hasResult) {
             return (completedExceptionally) ?
@@ -42,17 +59,28 @@ public class ResultDetails {
             return "Calculation is not finished yet";
         }
     }
+
+    /**
+     * Finishes calculation with {@param result}
+     */
     public void complete(int result) {
         timeCompleted = LocalDateTime.now();
         this.result = result;
         hasResult = true;
     }
+
+    /**
+     * Finishes calculation exceptionally
+     */
     public void completedExceptionally() {
         completedExceptionally = true;
         hasResult = true;
         timeCompleted = LocalDateTime.now();
     }
 
+    /**
+     * Starts timer to measure time of calculation
+     */
     public void start() {
         timeStartedMillis = System.currentTimeMillis();
     }

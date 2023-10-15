@@ -8,9 +8,6 @@ import org.example.memoization.MemoizationMap;
 import org.example.util.Parser;
 import org.example.util.Reader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Optional;
 
 /**
@@ -31,30 +28,17 @@ public class AdvancedController {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
             Process processG = processCreator.startGProcess();
-            //initListener(processG);
-            //initListener(processF);
             startSocket(processF, processG);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void initListener(Process process) {
-        Thread t = new Thread(()->{
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        });
-        t.setDaemon(true);
-        t.start();
-    }
-
+    /**
+     * starts socket
+     * @param p1 - process F
+     * @param p2 - process G
+     */
     private void startSocket(Process p1, Process p2) {
         try(SocketManager socketManager = new LongTermSocketManager()) {
             socketManager.start();

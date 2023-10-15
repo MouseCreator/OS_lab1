@@ -17,11 +17,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * Socket manager for constantly connected sockets
+ */
 public class LongTermSocketManager implements SocketManager {
     private ServerSocket serverSocket;
     private Socket FSocket;
     private Socket GSocket;
-
     private final SeparateLock FLock = new SeparateLock();
     private final SeparateLock GLock = new SeparateLock();
     private ObjectOutputStream outputStreamF;

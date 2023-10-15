@@ -3,6 +3,9 @@ package org.example.client.socket;
 import org.example.main.completable.dto.FunctionInput;
 import org.example.main.completable.dto.Signal;
 
+/**
+ * Mock socket manager to test without socket
+ */
 public class ClientSocketMock implements LongTermClientSocketIO{
 
     private int sentDataCount = 0;

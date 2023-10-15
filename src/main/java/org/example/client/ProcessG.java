@@ -10,10 +10,8 @@ public class ProcessG {
         LongTermClientSocketIO clientSocketIO = new LongTermClientSocketManager();
         Computation computation = new Computation(10);
         LongTermCalculator commonCalculator = new LongTermCalculator(clientSocketIO, computation, "Process G");
-        System.out.println("G starts!");
         clientSocketIO.connect();
         commonCalculator.calculate();
         clientSocketIO.close();
-        System.out.println("G closes!");
     }
 }
