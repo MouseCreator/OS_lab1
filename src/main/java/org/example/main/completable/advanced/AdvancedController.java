@@ -71,7 +71,8 @@ public class AdvancedController {
 
     private void execute(String expression) {
         String formatted = toStandardForm(expression);
-        String[] s = formatted.split("[\\s\\t]+", 2);
+        String withCommand = toCommand(formatted);
+        String[] s = withCommand.split("[\\s\\t]+", 2);
         String command;
         String[] params;
         if (s.length == 1) {
@@ -85,6 +86,21 @@ public class AdvancedController {
             response(command, params);
         } else {
             System.out.println("Command " + command + " does not take given number of parameters");
+        }
+    }
+
+    /**
+     * Allows user to type x value without "f" prefix
+     * @param expression - user input
+     * @return  if input starts with decimal number, adds "f" at the beginning, otherwise returns {@param expression}
+     */
+    private String toCommand(String expression) {
+        String[] s = expression.split("[\\s\\t]+", 2);
+        Optional<Integer> integer = toInteger(s[0]);
+        if (integer.isPresent()) {
+            return "f " + expression;
+        } else {
+            return expression;
         }
     }
 
