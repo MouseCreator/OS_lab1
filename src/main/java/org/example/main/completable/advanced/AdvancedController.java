@@ -182,6 +182,7 @@ public class AdvancedController {
             return;
         }
         timeout = t.get();
+        System.out.println("Successfully changed timeout to " + timeout + "ms");
     }
 
     private void close() {
