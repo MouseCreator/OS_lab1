@@ -8,7 +8,7 @@ public class AdvancedMain {
     2. Implement status handling --DONE
     3. Fix critical error extra info --DONE
     4. Fix memoization map --DONE
-    5. Fix exits
+    5. Fix exits --DONE
     6. Fix console output -- use \r?
      */
     public static void main(String[] args) {
