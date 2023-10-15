@@ -12,11 +12,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
 
+/**
+ * Class for communication with user
+ * All the execution logic is passed to the service
+ * @see org.example.main.completable.advanced.AdvancedService
+ */
 public class AdvancedController {
-
     private AdvancedService service;
     private long timeout = 4000L;
     private boolean running = true;
+
+    /**
+     * Starts processes and socket
+     * Starts main loop
+     */
     public void start() {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
@@ -62,6 +71,10 @@ public class AdvancedController {
         MemoizationMap<Integer, Integer> memoizationMap = new MemoizationMap<>();
         service = new AdvancedService(socketManager, memoizationMap);
     }
+
+    /**
+     * Main loop
+     */
     private void doCalculateCycle() {
         while (running) {
             String input = Reader.readString("> ");
@@ -69,6 +82,11 @@ public class AdvancedController {
         }
     }
 
+    /**
+     * Executes user input
+     * Splits input expression "command param1 param2 ..." to command string and array of parameters
+     * @param expression - user input to be executed
+     */
     private void execute(String expression) {
         String formatted = toStandardForm(expression);
         String withCommand = toCommand(formatted);
@@ -82,12 +100,9 @@ public class AdvancedController {
             command = s[0];
             params = s[1].split("[\\s\\t]+");
         }
-        if(validate(command, params)) {
-            response(command, params);
-        } else {
-            System.out.println("Command " + command + " does not take given number of parameters");
-        }
+        validateAndExecute(command, params);
     }
+
 
     /**
      * Allows user to type x value without "f" prefix
@@ -103,7 +118,23 @@ public class AdvancedController {
             return expression;
         }
     }
-
+    /**
+     * Validates the command and executes it
+     * @param command - command to be executed
+     * @param params - command parameters
+     */
+    private void validateAndExecute(String command, String[] params) {
+        if(validate(command, params)) {
+            response(command, params);
+        } else {
+            System.out.println("Command " + command + " does not take given number of parameters");
+        }
+    }
+    /**
+     * Executes command with parameters. Number of parameters is expected to be validated first
+     * @param command - command to be executed
+     * @param params - array of parameters
+     */
     private void response(String command, String[] params) {
         switch (command) {
             case "func", "f" -> calculateValue(params);
