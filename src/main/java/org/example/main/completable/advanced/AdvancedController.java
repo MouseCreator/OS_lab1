@@ -25,8 +25,8 @@ public class AdvancedController {
         try(ProcessCreator processCreator = new ProcessCreatorImpl()) {
             Process processF = processCreator.startFProcess();
             Process processG = processCreator.startGProcess();
-            //initListener(processG);
-            //initListener(processF);
+            initListener(processG);
+            initListener(processF);
             startSocket(processF, processG);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -63,7 +63,7 @@ public class AdvancedController {
 
     private void calculate(SocketManager socketManager) {
         while (true) {
-            String input = Reader.read("> ");
+            String input = Reader.readString("> ");
             int x;
             try {
                 x = Integer.parseInt(input);

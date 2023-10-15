@@ -42,7 +42,7 @@ public class BasicController {
     }
 
     private void calculate(SocketManager socketManager) {
-        int x = Reader.getInteger("x = ");
+        int x = Reader.readInteger("x = ");
         CompletableFuture<FunctionOutput> futureF = socketManager.calculateF(new CalculationParameters(x, 40000L, Signal.CONTINUE));
         CompletableFuture<FunctionOutput> futureG = socketManager.calculateG(new CalculationParameters(x, 40000L, Signal.CONTINUE));
         try {

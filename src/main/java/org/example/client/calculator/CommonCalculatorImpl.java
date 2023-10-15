@@ -65,7 +65,7 @@ public class CommonCalculatorImpl implements CommonCalculator{
         public Optional<Optional<Integer>> call() {
             while (!Thread.interrupted()) {
                 Optional<Optional<Integer>> result = function.compfunc(x);
-                if (result.isEmpty()) //fatal error
+                if (result.isEmpty()) //critical error
                     return result;
                 if (result.get().isEmpty()) { //light error
                     lightErrorCount++;

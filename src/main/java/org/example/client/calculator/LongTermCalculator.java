@@ -86,7 +86,7 @@ public class LongTermCalculator implements CommonCalculator{
         }
         if (result.get().isEmpty()) {
             clientSocketIO.sendData(name, x, Status.FATAL_ERROR, 0,
-                    "Calculation finished with fatal error. Attempts: " + executor.getLightErrors());
+                    "Calculation finished with critical error. Attempts: " + executor.getLightErrors());
             System.out.println("Fatal error " + x);
             return;
         }

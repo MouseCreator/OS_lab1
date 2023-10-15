@@ -25,7 +25,7 @@ public class Controller {
     }
 
     private String readString(String prompt) {
-        return Reader.read(prompt);
+        return Reader.readString(prompt);
     }
 
     private void execute(String expression) {

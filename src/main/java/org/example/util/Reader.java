@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Reader {
     private static final Scanner scanner = new Scanner(System.in);
-    public static String read(String prompt) {
+    public static String readString(String prompt) {
         String inputLine;
         do {
             System.out.print(prompt);
@@ -13,7 +13,7 @@ public class Reader {
         return inputLine;
     }
 
-    public static Integer getInteger(String prompt) {
+    public static Integer readInteger(String prompt) {
         String inputLine;
         while (true){
             System.out.print(prompt);
