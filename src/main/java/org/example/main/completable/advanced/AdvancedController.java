@@ -147,6 +147,12 @@ public class AdvancedController {
         }
     }
 
+    /**
+     *
+     * @param command - command to validate
+     * @param parameters - array of parameters
+     * @return true if command can take specified number of parameters
+     */
     private boolean validate(String command, String[] parameters) {
         final int ANY = -2;
         final int AT_LEAST_ONE = -1;
@@ -172,6 +178,7 @@ public class AdvancedController {
         assert params.length == 1;
         Optional<Long> t = toLong(params[0]);
         if (t.isEmpty()) {
+            System.out.println(params[0] + " cannot be cast to a long value!");
             return;
         }
         timeout = t.get();
@@ -197,6 +204,7 @@ public class AdvancedController {
             for (String p : params) {
                 Optional<Integer> x = toInteger(p);
                 if (x.isEmpty()) {
+                    System.out.println(p + " is not an integer");
                     continue;
                 }
                 service.status(x.get());
@@ -208,10 +216,15 @@ public class AdvancedController {
         for (String p : params) {
             Optional<Integer> x = toInteger(p);
             if (x.isEmpty()) {
+                System.out.println(p + " is not an integer");
                 continue;
             }
             service.calculate(x.get(), timeout);
         }
+    }
+
+    private String toStandardForm(String expression) {
+        return expression.trim().toLowerCase();
     }
 
     private Optional<Integer> toInteger(String s) {
@@ -219,7 +232,6 @@ public class AdvancedController {
             int value = Integer.parseInt(s);
             return Optional.of(value);
         } catch (Exception e) {
-            System.out.println(s + " is not an integer!");
             return Optional.empty();
         }
     }
@@ -228,13 +240,8 @@ public class AdvancedController {
             long value = Long.parseLong(s);
             return Optional.of(value);
         } catch (Exception e) {
-            System.out.println(s + " is not an integer!");
             return Optional.empty();
         }
-    }
-
-    private String toStandardForm(String expression) {
-        return expression.trim().toLowerCase();
     }
 
 }

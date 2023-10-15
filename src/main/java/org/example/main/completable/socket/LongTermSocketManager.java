@@ -214,10 +214,12 @@ public class LongTermSocketManager implements SocketManager {
                         }
                         synchronized (outputQueue) {
                             outputQueue.add(receivedOutput);
-                            outputQueue.notifyAll();
                         }
                     } finally {
-                        lock.unlock();
+                        synchronized (outputQueue) {
+                            lock.unlock();
+                            outputQueue.notifyAll();
+                        }
                     }
                 } else {
                     synchronized (outputQueue) {
