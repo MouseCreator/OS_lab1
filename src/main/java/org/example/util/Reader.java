@@ -18,7 +18,7 @@ public class Reader {
         do {
             System.out.print(prompt);
             inputLine = scanner.nextLine();
-        } while (inputLine == null || inputLine.isEmpty());
+        } while (inputLine == null);
         return inputLine;
     }
     /**
@@ -39,5 +39,9 @@ public class Reader {
                 continue;
             }
         }
+    }
+
+    public static void awaitEnter() {
+        scanner.nextLine();
     }
 }

@@ -1,12 +1,12 @@
 package org.example.main.completable.advanced;
 
+import org.example.main.completable.console.ConsoleManager;
 import org.example.main.completable.creator.ProcessCreator;
 import org.example.main.completable.creator.ProcessCreatorImpl;
 import org.example.main.completable.socket.LongTermSocketManager;
 import org.example.main.completable.socket.SocketManager;
 import org.example.memoization.MemoizationMap;
 import org.example.util.Parser;
-import org.example.util.Reader;
 
 import java.util.Optional;
 
@@ -19,6 +19,7 @@ public class AdvancedController {
     private AdvancedService service;
     private long timeout = 4000L;
     private boolean running = true;
+    private final ConsoleManager consoleManager = new ConsoleManager();
 
     /**
      * Starts processes and socket
@@ -54,15 +55,23 @@ public class AdvancedController {
 
     private void initService(SocketManager socketManager) {
         MemoizationMap<Integer, String> memoizationMap = new MemoizationMap<>();
-        service = new AdvancedService(socketManager, memoizationMap);
+        service = new AdvancedService(socketManager, memoizationMap, consoleManager);
     }
 
     /**
-     * Main loop
+     * Main UI loop
      */
     private void doCalculateCycle() {
+        help();
+        System.out.print("Press 'Enter' to begin ===>");
         while (running) {
-            String input = Reader.readString("> ");
+            consoleManager.beginInput();
+            String input = consoleManager.getString();
+            if (input.isEmpty()) {
+                consoleManager.endInput();
+                continue;
+            }
+            consoleManager.endInput();
             execute(input);
         }
     }
@@ -181,7 +190,15 @@ public class AdvancedController {
      */
     private void help() {
         String helpString = """
-                <==HELP==>
+                <=== HELP ===>
+                
+                There program has modes: Input and Output mode
+                Initially program is in Output mode
+                
+                In Output mode, the program will be able to print to the console
+                In Input mode, user is expected to provide input and all outputs will be queued
+                Press 'Enter' to switch to the Input mode
+                
                 Expected input format is: command param1 param2 ...
                 Functions are not case-sensitive
                 Extra spaces and tabulations will be ignored
@@ -211,7 +228,7 @@ public class AdvancedController {
                     Example: 0 1 => calculate f(0) and f(1)
                     
                 """;
-        System.out.println(helpString);
+        consoleManager.print(helpString);
     }
     private void changeTimeout(String[] params) {
         assert params.length == 1;
@@ -223,10 +240,10 @@ public class AdvancedController {
         long nt = t.get();
         if (nt > 0) {
             timeout = nt;
-            System.out.println("Successfully changed timeout to " + timeout + "ms");
+            consoleManager.print("Successfully changed timeout to " + timeout + "ms");
         }
         else {
-            System.out.println("Timeout cannot be a negative value");
+            consoleManager.print("Timeout cannot be a negative value");
         }
 
     }
@@ -237,7 +254,7 @@ public class AdvancedController {
     }
 
     private void handleUnknown(String command) {
-        System.out.println("Unknown function:" + command);
+        consoleManager.print("Unknown function:" + command);
     }
 
     private void status(String[] params) {
@@ -247,7 +264,7 @@ public class AdvancedController {
             for (String p : params) {
                 Optional<Integer> x = Parser.toInteger(p);
                 if (x.isEmpty()) {
-                    System.out.println(p + " is not an integer");
+                    consoleManager.print(p + " is not an integer");
                     continue;
                 }
                 service.status(x.get());

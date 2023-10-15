@@ -105,7 +105,11 @@ public class LongTermCalculator implements CommonCalculator{
                 builder.append(x).append(": ").append(executor.status()).append('\n');
             }
         }
-        clientSocketIO.sendData(name, -1, Status.STATUS_ALL, 0, builder.toString());
+        String res =  builder.toString();
+        if (res.isEmpty()) {
+            res = "No calculations in progress";
+        }
+        clientSocketIO.sendData(name, -1, Status.STATUS_ALL, 0, res);
     }
 
     /**

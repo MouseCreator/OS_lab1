@@ -1,5 +1,6 @@
 package org.example.main.completable.advanced;
 
+import org.example.main.completable.console.ConsoleManager;
 import org.example.main.completable.dto.CalculationParameters;
 import org.example.main.completable.dto.FunctionOutput;
 import org.example.main.completable.dto.Signal;
@@ -19,17 +20,19 @@ import java.util.concurrent.ExecutionException;
 public class AdvancedService {
     private final MemoizationMap<Integer, String> memoizationMap;
     private final SocketManager socketManager;
+    private final ConsoleManager consoleManager;
 
-    public AdvancedService(SocketManager socketManager, MemoizationMap<Integer, String> memoizationMap) {
+    public AdvancedService(SocketManager socketManager, MemoizationMap<Integer, String> memoizationMap, ConsoleManager consoleManager) {
         this.socketManager = socketManager;
         this.memoizationMap = memoizationMap;
+        this.consoleManager = consoleManager;
     }
 
     public void calculate(int x, long timeout) {
         if (memoizationMap.isComputed(x)) {
             Optional<String> precalculated = memoizationMap.get(x);
             assert precalculated.isPresent();
-            System.out.println("From memoization map\n" + precalculated.get());
+            consoleManager.print("From memoization map\n" + precalculated.get());
             return;
         }
         calculateNew(x, timeout);
@@ -59,9 +62,9 @@ public class AdvancedService {
         } catch (InterruptedException e) {
             futureF.cancel(true);
             futureG.cancel(true);
-            System.out.println("Calculation is interrupted!");
+            consoleManager.print("Calculation is interrupted!");
         } catch (ExecutionException e) {
-            System.out.println("Execution error!");
+            consoleManager.print("Execution error!");
             e.printStackTrace();
         }
     }
@@ -76,18 +79,18 @@ public class AdvancedService {
             detailedString += ("\n\tProcess G " + outputG.details());
         }
         memoizationMap.put(x, errorString);
-        System.out.println(detailedString);
+        consoleManager.print(detailedString);
     }
 
-    private static void printInterrupt(int x) {
+    private void printInterrupt(int x) {
         String interruptString = String.format("Result(%d) = CALCULATION INTERRUPTED", x);
-        System.out.println(interruptString);
+        consoleManager.print(interruptString);
     }
 
     private void printSuccess(int x, MathUtil mathUtil, FunctionOutput outputF, FunctionOutput outputG) {
         int result = mathUtil.gcd(outputG.value(), outputF.value());
         String successString = String.format("Result(%d) = %d", x, result);
-        System.out.println(successString);
+        consoleManager.print(successString);
         memoizationMap.put(x, successString);
     }
 
@@ -104,13 +107,13 @@ public class AdvancedService {
     public void statusAll() {
         String status1 = socketManager.statusF();
         String status2 = socketManager.statusG();
-        System.out.println(status1 + "\n" + status2);
+        consoleManager.print(status1 + "\n" + status2);
     }
 
     public void status(int x) {
         String status1 = socketManager.statusF(x);
         String status2 = socketManager.statusG(x);
-        System.out.println(status1 + "\n" + status2);
+        consoleManager.print(status1 + "\n" + status2);
     }
 
     public void clearMap() {
